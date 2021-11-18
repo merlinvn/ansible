@@ -15,6 +15,7 @@
         - dotfiles
   tasks:
   - include: ./tasks/ssh.yaml
+  - include: ./tasks/git-setup.yml
   - include: ./tasks/zsh.yaml
   - include: ./tasks/node.yaml
   - include: ./tasks/fzf.yaml
