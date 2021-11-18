@@ -1,0 +1,31 @@
+- name: Install stow, git
+  become: true
+  package:
+    name:
+      - stow
+      - git
+    state: present
+  tags: "{{ dotfiles_tags }}"
+
+- name: Cloning dotfiles
+  ansible.builtin.git:
+    repo: 'https://github.com/merlinvn/dotfiles.git'
+    dest: "~/.dotfiles"
+    clone: yes
+    update: yes
+    accept_hostkey: yes
+  tags: "{{ dotfiles_tags }}"
+
+- name: Use Stow to manage dotfiles, this will alter the dotfiles
+  command: stow -t ~ -d ~/.dotfiles --adopt {{ item }}
+  loop:
+      - shell
+      - vim
+      - tmux
+  tags: "{{ dotfiles_tags }}"
+
+- name: reset the .dotfiles repo
+  command: git reset --hard HEAD
+  args:
+    chdir: ~/.dotfiles
+  tags: "{{ dotfiles_tags }}"

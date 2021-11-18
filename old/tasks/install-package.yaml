@@ -1,0 +1,10 @@
+- name: Install package and handle errors
+  become: true
+  block:
+    - name: Install package
+      apt: 
+        state: latest 
+        name: "{{ package_name }}"
+  rescue:
+    - debug:
+        msg: "I caught an error with {{ package_name }}" 

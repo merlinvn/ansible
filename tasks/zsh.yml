@@ -1,0 +1,70 @@
+- name: Install zsh
+  become: true
+  package:
+    name:
+      - zsh
+      - git
+    state: present
+  tags: "{{ zsh_tags }}"
+
+- name: Get zsh path
+  command: which zsh
+  register: zsh_path
+  tags: "{{ zsh_tags }}"
+
+- name: Change shell
+  become: yes
+  user:
+    name: "{{ username }}"
+    shell: "{{ zsh_path.stdout }}"
+
+- name: Check if .oh-my-zsh exists
+  stat:
+    path: ~/.oh-my-zsh
+  register: ohmyzsh_stat
+  tags: "{{ zsh_tags }}"
+
+- name: Install oh-my-zsh
+  shell: curl -L https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh | sh
+  when: not ohmyzsh_stat.stat.exists
+  tags: "{{ zsh_tags }}"
+
+- name: Install the zsh plugin completions
+  ansible.builtin.git:
+    repo: 'https://github.com/zsh-users/zsh-completions.git'
+    dest: "~/.oh-my-zsh/plugins/zsh-completions"
+  tags: "{{ zsh_tags }}"
+
+- name: Install the zsh plugin syntax-highlighting
+  ansible.builtin.git:
+    repo: 'https://github.com/zsh-users/zsh-syntax-highlighting.git'
+    dest: "~/.oh-my-zsh/plugins/zsh-syntax-highlighting"
+  tags: "{{ zsh_tags }}"
+
+- name: Install the zsh plugin autosuggestions
+  ansible.builtin.git:
+    repo: 'https://github.com/zsh-users/zsh-autosuggestions.git'
+    dest: "~/.oh-my-zsh/plugins/zsh-autosuggestions"
+  tags: "{{ zsh_tags }}"
+
+- name: Add zsh-autosuggestions to .zshrc
+  lineinfile:
+    path: ~/.zshrc
+    regexp: '^plugins=\((.*)\)'
+    line: 'plugins=(git zsh-autosuggestions zsh-syntax-highlighting zsh-completions docker docker-compose kubectl)'
+    backrefs: yes
+  tags: "{{ zsh_tags }}"
+
+- name: Install starship
+  become: true
+  shell: curl -fsSL https://starship.rs/install.sh | sh -s -- -y
+  tags: "{{ zsh_tags }}"
+
+- name: Append starship init to .zshrc
+  lineinfile:
+    path: ~/.zshrc
+    line: 'eval "$(starship init zsh)"'
+    create: yes
+    state: present
+    insertafter: EOF
+  tags: "{{ zsh_tags }}"

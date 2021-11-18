@@ -1,0 +1,3 @@
+- name: Set global Node.js version to LTS using Mise
+  shell: ~/.local/bin/mise use --global node@lts
+  tags: "{{ node_tags }}"

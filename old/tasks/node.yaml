@@ -1,0 +1,33 @@
+- name: Install NodeJs
+  become: yes
+  apt:
+    name: ['nodejs', 'npm']
+  tags:
+    - node
+
+- name: Change file ownership
+  become: yes
+  ansible.builtin.file:
+    path: "{{ item }}"
+    owner: "{{ username }}"
+    state: directory
+  with_items:
+    - ~/.npm
+    - /usr/lib/node_modules
+    - /usr/local/lib/node_modules
+    - /usr/local/bin
+    - /usr/local/lib
+    - /usr/local/include
+    - /usr/local/share
+    - /usr/local/n
+
+- name: Install n
+  npm: 
+    name: n
+    global: true
+  tags:
+    - node
+- name: n 16
+  shell: n 16
+  tags:
+    - node

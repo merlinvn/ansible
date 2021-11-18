@@ -1,0 +1,20 @@
+- name: Install all packages ignoring errors
+  include_tasks: tasks/install-package.yaml 
+  vars:
+    package_name: "{{ item }}"
+  with_items:
+    - curl
+    - git
+    - xclip
+    - tmux
+    - exa
+    - ripgrep
+    - bat
+    - fd-find
+    - fortune
+    - cowsay
+    - autojump
+    - zsh
+    - stow
+    - vim-gui-common
+    - vim-runtime

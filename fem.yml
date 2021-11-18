@@ -1,0 +1,46 @@
+- hosts: new_machine
+  become: true
+  tasks:
+    - name: Install zsh, git, and curl
+      package:
+        name:
+          - zsh
+          - git
+          - curl
+        state: present
+        update_cache: yes
+- hosts: new_machine
+  become: false
+  vars:
+    the_user: "{{ ansible_user_id }}"
+  tasks:
+    - name: Change shell
+      become: yes
+      user:
+        name: "{{ the_user }}"
+        shell: /bin/zsh
+    - name: Check if .oh-my-zsh exists
+      stat:
+        path: ~/.oh-my-zsh
+      register: ohmyzsh_stat
+    - name: Install oh-my-zsh
+      shell: curl -L https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh | sh
+      when: not ohmyzsh_stat.stat.exists
+    - name: Install the zsh plugin completions
+      ansible.builtin.git:
+        repo: 'https://github.com/zsh-users/zsh-completions.git'
+        dest: "~/.oh-my-zsh/plugins/zsh-completions"
+    - name: Install the zsh plugin syntax-highlighting
+      ansible.builtin.git:
+        repo: 'https://github.com/zsh-users/zsh-syntax-highlighting.git'
+        dest: "~/.oh-my-zsh/plugins/zsh-syntax-highlighting"
+    - name: Install the zsh plugin autosuggestions
+      ansible.builtin.git:
+        repo: 'https://github.com/zsh-users/zsh-autosuggestions.git'
+        dest: "~/.oh-my-zsh/plugins/zsh-autosuggestions"
+    - name: Add zsh-autosuggestions to .zshrc
+      lineinfile:
+        path: ~/.zshrc
+        regexp: '^plugins=\((.*)\)'
+        line: 'plugins=(\1 zsh-autosuggestions zsh-syntax-highlighting zsh-completions docker docker-compose kubectl)'
+        backrefs: yes

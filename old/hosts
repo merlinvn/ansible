@@ -1,0 +1,5 @@
+new_pc:
+  hosts:
+    target:
+      ansible_host: 10.10.12.141
+      ansible_user: neo

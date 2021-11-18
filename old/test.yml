@@ -1,0 +1,19 @@
+- hosts: new_pc
+  vars:
+    username: "{{ ansible_user }}"
+    source_key: "./.ssh/id_rsa"
+    dest_key: "{{ ansible_env.HOME }}/.ssh/id_rsa"
+    home_path: "{{ ansible_env.HOME }}"
+  pre_tasks:
+    - name: Update cache
+      become: true
+      apt:
+        update_cache: true
+      tags:
+        - zsh
+        - node
+        - fzf
+        - dotfiles
+        - other-tools
+  tasks:
+  - include: ./tasks/basic-packages.yaml

@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+install_debian(){
+  echo "deb http://ppa.launchpad.net/ansible/ansible/ubuntu focal main" | sudo tee -a /etc/apt/sources.list
+  sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 93C4A3FD7BB9C367
+  sudo apt update -y
+  sudo apt install -y curl git software-properties-common ansible
+}
+
+install_ubuntu(){
+  sudo apt-add-repository -y ppa:ansible/ansible
+  sudo apt-get update -y
+  sudo apt-get install -y curl git software-properties-common ansible
+}
+
+# try various methods, in order of preference, to detect distro
+# store result in variable '$distro'
+if type lsb_release >/dev/null 2>&1 ; then
+   distro=$(lsb_release -i -s)
+elif [ -e /etc/os-release ] ; then
+   distro=$(awk -F= '$1 == "ID" {print $2}' /etc/os-release)
+elif [ -e /etc/some-other-release-file ] ; then
+   distro=$(ihavenfihowtohandleotherhypotheticalreleasefiles)
+fi
+
+# convert to lowercase
+distro=$(printf '%s\n' "$distro" | LC_ALL=C tr '[:upper:]' '[:lower:]')
+
+# now do different things depending on distro
+case "$distro" in
+   debian*)  install_debian ;;
+   raspbian*)  install_debian ;;
+   ubuntu*)  install_ubuntu ;;
+   *)        echo "unknown distro: '$distro'" ; exit 1 ;;
+esac
+
+## pull ansible
+# sudo ansible-pull -U https://github.com/merlinvn/ansible.git
+
+

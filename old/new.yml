@@ -1,0 +1,27 @@
+- hosts: localhost
+  vars:
+    username: "{{ lookup('env', 'USER') }}"
+    source_key: "./.ssh/id_rsa"
+    dest_key: "{{ lookup('env', 'HOME') }}/.ssh/id_rsa"
+    home_path: "{{ lookup('env', 'HOME') }}"
+  pre_tasks:
+    - name: Update cache
+      become: true
+      apt:
+        update_cache: true
+      tags:
+        - zsh
+        - node
+        - fzf
+        - dotfiles
+        - other-tools
+  tasks:
+  # - include: ./tasks/ssh.yaml
+  # - include: ./tasks/git-setup.yaml
+  # - include: ./tasks/zsh.yaml
+  # - include: ./tasks/node.yaml
+  # - include: ./tasks/fzf.yaml
+  # - include: ./tasks/rust.yaml
+  - include: ./tasks/go.yaml
+  # - include: ./tasks/other-tools.yaml
+  # - include: ./tasks/dotfiles.yaml

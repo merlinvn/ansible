@@ -1,0 +1,69 @@
+- hosts: localhost
+  vars:
+    username: "{{ ansible_user_id }}"
+    zsh_tags:
+      - install
+      - zsh
+    git_tags:
+      - install
+      - git
+    fzf_tags:
+      - install
+      - fzf
+    rust_tags:
+      - install
+      - rust
+    mise_tags:
+      - install
+      - mise
+      - node
+    node_tags:
+      - node
+    dotfiles_tags:
+      - install
+      - dotfiles
+  gather_facts: true
+  pre_tasks:
+    - name: Update cache
+      become: true
+      apt:
+        update_cache: true
+  tasks:
+    - name: Install basic packages
+      include_tasks: ./tasks/install_basic_packages.yml
+      tags:
+        - base
+        - install
+    - name: Setup zsh
+      include_tasks:
+        file: ./tasks/zsh.yml
+      tags: "{{ zsh_tags }}"
+    - name: Setup git
+      include_tasks:
+        file: ./tasks/git.yml
+      tags: "{{ git_tags }}"
+    - name: Setup fzf
+      include_tasks:
+        file: ./tasks/fzf.yml
+      tags: "{{ fzf_tags }}"
+    - name: Setup rust
+      include_tasks:
+        file: ./tasks/rust.yml
+      tags: "{{ rust_tags }}"
+    - name: Setup mise
+      include_tasks:
+        file: ./tasks/mise.yml
+      tags: "{{ mise_tags }}"
+    - name: Setup node
+      include_tasks:
+        file: ./tasks/node.yml
+      tags: "{{ node_tags }}"
+    - name: Setup dotfiles
+      include_tasks:
+        file: ./tasks/dotfiles.yml
+      tags: "{{ dotfiles_tags }}"
+  # - include: ./tasks/ssh.yaml
+  # - include: ./tasks/node.yaml
+  # - include: ./tasks/rust.yaml
+  # - include: ./tasks/go.yaml
+  # - include: ./tasks/other-tools.yaml

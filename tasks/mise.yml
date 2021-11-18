@@ -1,0 +1,23 @@
+- name: Install curl
+  become: true
+  package:
+    name:
+      - curl
+      - libssl-dev
+      - libffi-dev
+      - zlib1g-dev
+    state: present
+  tags: "{{ mise_tags }}"
+
+- name: Install Mise using its install script
+  shell: curl https://mise.jdx.dev/install.sh | sh
+  tags: "{{ mise_tags }}"
+
+- name: activate mise
+  lineinfile:
+    path: ~/.zshrc
+    line: 'eval "$(~/.local/bin/mise activate zsh)"'
+    create: yes
+    state: present
+    insertafter: EOF
+  tags: "{{ mise_tags }}"

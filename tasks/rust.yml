@@ -1,0 +1,10 @@
+- name: check if cargo is installed
+  shell: command -v cargo
+  register: cargo_exists
+  ignore_errors: yes
+  tags: "{{ rust_tags }}"
+
+- name: Install Rust
+  when: cargo_exists is failed
+  shell: curl https://sh.rustup.rs -sSf | sh -s -- -y
+  tags: "{{ rust_tags }}"

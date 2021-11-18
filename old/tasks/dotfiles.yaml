@@ -1,0 +1,19 @@
+- name: Cloning .dotfiles
+  ansible.builtin.git:
+    repo: 'git@github.com:merlinvn/dotfiles.git'
+    dest: "{{ home_path }}/dotfiles"
+    recursive: yes
+    update: yes
+    accept_hostkey: yes
+    version: master
+  tags:
+    - install
+    - dotfiles
+    - stow
+- name: Stow dotfiles
+  shell: cd $HOME/dotfiles && ./setup.sh
+  tags:
+    - install
+    - dotfiles
+    - stow
+

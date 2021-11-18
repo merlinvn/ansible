@@ -1,0 +1,27 @@
+- name: Install git
+  become: true
+  package:
+    name:
+      - git
+    state: present
+  tags: "{{ git_tags }}"
+- name: Git personal setup email
+  git_config:
+    name: user.email
+    scope: global
+    value: "merlinvn@gmail.com"
+  tags: "{{ git_tags }}"
+
+- name: Git personal setup name
+  git_config:
+    name: user.name
+    scope: global
+    value: "Nguyen Tran"
+  tags: "{{ git_tags }}"
+
+- name: Git init defaultBranch
+  git_config:
+    name: init.defaultBranch
+    scope: global
+    value: "main"
+  tags: "{{ git_tags }}"
