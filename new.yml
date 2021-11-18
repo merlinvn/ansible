@@ -15,3 +15,4 @@
   - include: ./tasks/fzf.yaml
   - include: ./tasks/rust.yaml
   - include: ./tasks/go.yaml
+  - include: ./tasks/dotfiles.yaml
