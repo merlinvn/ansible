@@ -2,6 +2,12 @@
   apt: name=zsh
   tags:
     - zsh
+
+- name: Install autojump
+  apt: name=autojump
+  tags:
+    - zsh
+
 - name: Change shell 
   become: no
   shell: chsh -s `which zsh`
