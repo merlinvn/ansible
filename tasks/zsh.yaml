@@ -3,6 +3,7 @@
   tags:
     - zsh
 - name: Change shell 
+  become: no
   shell: chsh -s `which zsh`
   tags:
     - zsh
