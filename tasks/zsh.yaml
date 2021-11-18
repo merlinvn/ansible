@@ -18,7 +18,6 @@
   tags:
     - install
     - productivity
-    - dotfiles
     - zsh
 
 - name: Install Ohmyzsh

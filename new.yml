@@ -1,5 +1,8 @@
 - hosts: localhost
   become: true
+  vars:
+    source_key: "./.ssh/id_rsa"
+    dest_key: "{{ lookup('env', 'HOME') }}/.ssh/id_rsa"
   pre_tasks:
     - name: Update cache
       apt:
@@ -9,7 +12,9 @@
         - node
         - fzf
         - rust
+        - dotfiles
   tasks:
+  - include: ./tasks/ssh.yaml
   - include: ./tasks/zsh.yaml
   - include: ./tasks/node.yaml
   - include: ./tasks/fzf.yaml
