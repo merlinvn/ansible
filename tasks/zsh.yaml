@@ -11,10 +11,22 @@
   tags:
     - zsh
 
+- name: Check that the somefile.conf exists
+  stat:
+    path: ~/.oh-my-zsh
+  register: oh_my_stats
+  tags:
+    - install
+    - productivity
+    - dotfiles
+    - zsh
+
 - name: Install Ohmyzsh
-  shell: sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+  shell: curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh) | sh -s -- -y
   tags:
     - zsh
+  when: oh_my_stats.stat.exists == False
+
 - name: Install the zsh plugin autosuggestions
   ansible.builtin.git:
     repo: 'https://github.com/zsh-users/zsh-autosuggestions.git'
@@ -33,6 +45,7 @@
     dest: "~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting"
   tags:
     - zsh
+
 - name: Update zshrc
   ansible.builtin.replace:
     path: ~/.zshrc
