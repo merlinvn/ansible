@@ -2,7 +2,7 @@
   file:
     dest: "{{ dest_key | dirname }}"
     mode: 0700
-    owner: {{ user }}
+    owner: "{{ user }}"
     state: directory
   tags:
     - dotfiles
