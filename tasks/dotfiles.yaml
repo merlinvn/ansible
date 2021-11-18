@@ -18,7 +18,7 @@
     - dotfiles
     - stow
 - name: Stow dotfiles
-  shell: cd $HOME/dotfiles && ./setup
+  shell: cd $HOME/dotfiles && ./setup.sh
   become: no
   tags:
     - install
