@@ -6,6 +6,7 @@
   shell: chsh -s `which zsh`
   tags:
     - zsh
+
 - name: Install starship
   shell: curl -fsSL https://starship.rs/install.sh | sh -s -- -y
   tags:
@@ -14,6 +15,7 @@
 - name: Check that the somefile.conf exists
   stat:
     path: ~/.oh-my-zsh
+  become: no
   register: oh_my_stats
   tags:
     - install
@@ -22,33 +24,29 @@
 
 - name: Install Ohmyzsh
   shell: curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh | sh -s -- -y
+  become: no
   tags:
     - zsh
   when: oh_my_stats.stat.exists == False
 
 - name: Install the zsh plugin autosuggestions
+  become: no
   ansible.builtin.git:
     repo: 'https://github.com/zsh-users/zsh-autosuggestions.git'
     dest: "~/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
   tags:
     - zsh
 - name: Install the zsh plugin completions
+  become: no
   ansible.builtin.git:
     repo: 'https://github.com/zsh-users/zsh-completions'
     dest: "~/.oh-my-zsh/custom/plugins/zsh-completions"
   tags:
     - zsh
 - name: Install the zsh plugin syntax highlighting
+  become: no
   ansible.builtin.git:
     repo: 'https://github.com/zsh-users/zsh-syntax-highlighting.git'
     dest: "~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting"
-  tags:
-    - zsh
-
-- name: Update zshrc
-  ansible.builtin.replace:
-    path: ~/.zshrc
-    regexp: '\(git'
-    replace: '(git zsh-autosuggestions'
   tags:
     - zsh
