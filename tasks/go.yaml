@@ -1,0 +1,29 @@
+# - name: Print all available facts
+#   ansible.builtin.debug:
+#     var: ansible_facts
+#   tags:
+#     - go
+
+- name: Get go version
+  ansible.builtin.shell:  curl 'https://golang.org/VERSION?m=text'
+  register: go_version
+  ignore_errors: true
+  tags:
+    - go
+
+- name: Download go.tar.gz
+  get_url:
+    url: "https://golang.org/dl/{{ go_version.stdout }}.linux-amd64.tar.gz"
+    dest: /tmp/go.tar.gz
+  when: ansible_facts.architecture == "x86_64"
+  tags:
+    - go
+
+- name: Unarchive a go.tar.gz
+  ansible.builtin.unarchive:
+    src: /tmp/go.tar.gz
+    dest: /usr/local
+    remote_src: yes
+  tags:
+    - go
+

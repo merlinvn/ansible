@@ -1,0 +1,17 @@
+- hosts: localhost
+  become: true
+  pre_tasks:
+    - name: Update cache
+      apt:
+        update_cache: true
+      tags:
+        - zsh
+        - node
+        - fzf
+        - rust
+  tasks:
+  - include: ./tasks/zsh.yaml
+  - include: ./tasks/node.yaml
+  - include: ./tasks/fzf.yaml
+  - include: ./tasks/rust.yaml
+  - include: ./tasks/go.yaml
