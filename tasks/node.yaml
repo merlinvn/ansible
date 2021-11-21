@@ -5,6 +5,7 @@
   tags:
     - node
 - name: Install n
+  become: yes
   npm: 
     name: n
     global: true
