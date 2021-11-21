@@ -1,11 +1,11 @@
 - hosts: localhost
-  become: true
   vars:
     user: neo
     source_key: "./.ssh/id_rsa"
     dest_key: "{{ lookup('env', 'HOME') }}/.ssh/id_rsa"
   pre_tasks:
     - name: Update cache
+      become: true
       apt:
         update_cache: true
       tags:

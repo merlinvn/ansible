@@ -1,4 +1,5 @@
 - name: Installing stow
+  become: yes
   apt: name=stow
   tags:
     - install
@@ -12,14 +13,12 @@
     update: yes
     accept_hostkey: yes
     version: master
-  become: no
   tags:
     - install
     - dotfiles
     - stow
 - name: Stow dotfiles
   shell: cd $HOME/dotfiles && ./setup.sh
-  become: no
   tags:
     - install
     - dotfiles

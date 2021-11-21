@@ -11,6 +11,7 @@
 #     - fzf
 
 - name: install fzf
+  become: yes
   apt: name=fzf
   tags:
     - fzf

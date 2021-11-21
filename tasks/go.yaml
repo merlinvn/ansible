@@ -36,6 +36,7 @@
     - go
 
 - name: Unarchive a go.tar.gz
+  become: yes
   ansible.builtin.unarchive:
     src: /tmp/go.tar.gz
     dest: /usr/local
