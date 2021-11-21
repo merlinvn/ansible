@@ -2,7 +2,7 @@
   file:
     dest: "{{ dest_key | dirname }}"
     mode: 0700
-    owner: "{{ user }}"
+    owner: "{{ username }}"
     state: directory
   tags:
     - dotfiles
@@ -12,7 +12,7 @@
   copy:
     src: "{{ source_key }}"
     dest: "{{ dest_key }}"
-    owner: "{{ user }}"
+    owner: "{{ username }}"
     mode: 0600
   tags:
     - dotfiles
@@ -22,7 +22,7 @@
   copy:
     src: "{{ source_key }}.pub"
     dest: "{{ dest_key }}.pub"
-    owner: "{{ user }}"
+    owner: "{{ username }}"
     mode: 0644
   tags:
     - dotfiles
@@ -30,7 +30,7 @@
     - ssh
 - name: Set authorized key took from file
   authorized_key:
-    user: "{{ lookup('env', 'USER') }}"
+    user: "{{ username }}"
     state: present
     key: "{{ lookup('env', 'HOME') }}/.ssh/id_rsa.pub"
   with_fileglob:
