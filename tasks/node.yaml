@@ -15,6 +15,11 @@
     - ~/.npm
     - /usr/lib/node_modules
     - /usr/local/lib/node_modules
+    - /usr/local/bin
+    - /usr/local/lib
+    - /usr/local/include
+    - /usr/local/share
+    - /usr/local/n
 
 - name: Install n
   npm: 
