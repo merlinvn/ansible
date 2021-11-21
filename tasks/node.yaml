@@ -6,6 +6,7 @@
     - node
 
 - name: Change file ownership
+  become: yes
   ansible.builtin.file:
     path: "{{ item }}"
     owner: "{{ username }}"
