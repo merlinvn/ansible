@@ -11,11 +11,13 @@
     - zsh
 
 - name: Change shell 
+  become: true
   shell: chsh -s $(which zsh)
   tags:
     - zsh
 
 - name: Install starship
+  become: true
   shell: curl -fsSL https://starship.rs/install.sh | sh -s -- -y
   tags:
     - zsh
