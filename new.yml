@@ -12,8 +12,8 @@
         - zsh
         - node
         - fzf
-        - rust
         - dotfiles
+        - other-tools
   tasks:
   - include: ./tasks/ssh.yaml
   - include: ./tasks/git-setup.yaml
@@ -22,4 +22,5 @@
   - include: ./tasks/fzf.yaml
   - include: ./tasks/rust.yaml
   - include: ./tasks/go.yaml
+  - include: ./tasks/other-tools.yaml
   - include: ./tasks/dotfiles.yaml

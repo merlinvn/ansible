@@ -1,0 +1,13 @@
+- name: Install other tools
+  become: true
+  apt:
+    pkg:
+      - exa
+      - ripgrep
+      - bat
+      - fd-find
+      - fortune
+      - cowsay
+  tags:
+    - other-tools
+
