@@ -10,9 +10,17 @@
   tags:
     - zsh
 
+- name: Get zsh path
+  command: which zsh
+  register: zsh_path
+  tags:
+    - zsh
+
 - name: Change shell 
   become: true
-  shell: chsh -s $(which zsh)
+  user:
+    name: "{{ username }}"
+    shell: "{{ zsh_path.stdout }}"
   tags:
     - zsh
 

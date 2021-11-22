@@ -1,9 +1,9 @@
-- hosts: localhost
+- hosts: new_pc
   vars:
-    username: "{{ lookup('env', 'USER') }}"
+    username: "{{ ansible_user }}"
     source_key: "./.ssh/id_rsa"
-    dest_key: "{{ lookup('env', 'HOME') }}/.ssh/id_rsa"
-    home_path: "{{ lookup('env', 'HOME') }}"
+    dest_key: "{{ ansible_env.HOME }}/.ssh/id_rsa"
+    home_path: "{{ ansible_env.HOME }}"
   pre_tasks:
     - name: Update cache
       become: true

@@ -34,4 +34,4 @@
     state: present
     key: "{{ item }}" 
   with_file:
-    - "{{ lookup('env', 'HOME') }}/.ssh/id_rsa.pub"
+    - "./.ssh/id_rsa.pub"

@@ -1,0 +1,5 @@
+new_pc:
+  hosts:
+    pi:
+      ansible_host: 10.0.0.203
+      ansible_user: pi
