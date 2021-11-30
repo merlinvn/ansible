@@ -30,7 +30,7 @@ distro=$(printf '%s\n' "$distro" | LC_ALL=C tr '[:upper:]' '[:lower:]')
 case "$distro" in
    debian*)  install_debian ;;
    raspbian*)  install_debian ;;
-   ubuntu*)  instarll_ubuntu ;;
+   ubuntu*)  install_ubuntu ;;
    *)        echo "unknown distro: '$distro'" ; exit 1 ;;
 esac
 
