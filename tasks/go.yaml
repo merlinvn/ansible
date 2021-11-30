@@ -5,7 +5,7 @@
 #     - go
 
 - name: Get go version
-  ansible.builtin.shell:  curl 'https://golang.org/VERSION?m=text'
+  ansible.builtin.shell:  curl 'https://go.dev/VERSION?m=text'
   register: go_version
   ignore_errors: true
   tags:
@@ -13,7 +13,7 @@
 
 - name: Download go.tar.gz
   get_url:
-    url: "https://golang.org/dl/{{ go_version.stdout }}.linux-amd64.tar.gz"
+    url: "https://dl.google.com/go/{{ go_version.stdout }}.linux-amd64.tar.gz"
     dest: /tmp/go.tar.gz
   when: ansible_facts.architecture == "x86_64"
   tags:
@@ -21,7 +21,7 @@
 
 - name: Download go.tar.gz
   get_url:
-    url: "https://golang.org/dl/{{ go_version.stdout }}.linux-arm64.tar.gz"
+    url: "https://dl.google.com/go/{{ go_version.stdout }}.linux-arm64.tar.gz"
     dest: /tmp/go.tar.gz
   when: ansible_facts.architecture == "aarch64"
   tags:
@@ -29,7 +29,7 @@
 
 - name: Download go.tar.gz
   get_url:
-    url: "https://golang.org/dl/{{ go_version.stdout }}.linux-armv6l.tar.gz"
+    url: "https://dl.google.com/go/{{ go_version.stdout }}.linux-armv6l.tar.gz"
     dest: /tmp/go.tar.gz
   when: ansible_facts.architecture == "armv7l"
   tags:
