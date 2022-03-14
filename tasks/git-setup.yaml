@@ -5,10 +5,11 @@
     value: "merlinvn@gmail.com"
   tags:
   - git-personal
+
 - name: Git personal setup name
   git_config:
     name: user.name
     scope: global
-    value: "merlinvn"
+    value: "Nguyen Tran"
   tags:
   - git-personal

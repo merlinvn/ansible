@@ -1,15 +1,3 @@
-- name: Install zsh
-  become: true
-  apt: name=zsh
-  tags:
-    - zsh
-
-- name: Install autojump
-  become: true
-  apt: name=autojump
-  tags:
-    - zsh
-
 - name: Get zsh path
   command: which zsh
   register: zsh_path
