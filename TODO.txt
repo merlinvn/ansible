@@ -2,5 +2,7 @@ Todo:
 
 - Add install `nvim` task
 - Install lsp servers
+- Install docker
+- Install docker-compose
 
 

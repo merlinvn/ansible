@@ -3,6 +3,7 @@
   vars:
     package_name: "{{ item }}"
   with_items:
+    - curl
     - git
     - xclip
     - tmux

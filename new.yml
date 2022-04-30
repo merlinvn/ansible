@@ -16,12 +16,12 @@
         - dotfiles
         - other-tools
   tasks:
-  - include: ./tasks/ssh.yaml
-  - include: ./tasks/git-setup.yaml
-  - include: ./tasks/zsh.yaml
-  - include: ./tasks/node.yaml
-  - include: ./tasks/fzf.yaml
-  - include: ./tasks/rust.yaml
+  # - include: ./tasks/ssh.yaml
+  # - include: ./tasks/git-setup.yaml
+  # - include: ./tasks/zsh.yaml
+  # - include: ./tasks/node.yaml
+  # - include: ./tasks/fzf.yaml
+  # - include: ./tasks/rust.yaml
   - include: ./tasks/go.yaml
-  - include: ./tasks/other-tools.yaml
-  - include: ./tasks/dotfiles.yaml
+  # - include: ./tasks/other-tools.yaml
+  # - include: ./tasks/dotfiles.yaml
