@@ -1,4 +1,4 @@
-- hosts: localhost
+- hosts: new_machine
   vars:
     username: "{{ ansible_user_id }}"
     zsh_tags:
@@ -62,8 +62,3 @@
       include_tasks:
         file: ./tasks/dotfiles.yml
       tags: "{{ dotfiles_tags }}"
-  # - include: ./tasks/ssh.yaml
-  # - include: ./tasks/node.yaml
-  # - include: ./tasks/rust.yaml
-  # - include: ./tasks/go.yaml
-  # - include: ./tasks/other-tools.yaml

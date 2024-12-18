@@ -1,2 +1,2 @@
 [new_machine]
-localhost ansible_port=2222 ansible_user=ubuntu ansible_ssh_pass=ubuntu
+10.10.10.83 ansible_port=22 ansible_user=neo

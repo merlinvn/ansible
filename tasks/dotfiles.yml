@@ -9,7 +9,7 @@
 
 - name: Cloning dotfiles
   ansible.builtin.git:
-    repo: 'https://github.com/merlinvn/dotfiles.git'
+    repo: "https://github.com/merlinvn/dotfiles.git"
     dest: "~/.dotfiles"
     clone: yes
     update: yes
@@ -19,9 +19,10 @@
 - name: Use Stow to manage dotfiles, this will alter the dotfiles
   command: stow -t ~ -d ~/.dotfiles --adopt {{ item }}
   loop:
-      - shell
-      - vim
-      - tmux
+    - shell
+    - vim
+    - tmux
+    - starship
   tags: "{{ dotfiles_tags }}"
 
 - name: reset the .dotfiles repo
