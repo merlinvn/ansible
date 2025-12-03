@@ -1,0 +1,97 @@
+- name: Uninstall old Docker versions
+  become: true
+  package:
+    name:
+      - docker.io
+      - docker-compose
+      - docker-doc
+      - podman-docker
+      - containerd
+      - runc
+    state: absent
+  tags:
+    - docker
+
+- name: Install Docker prerequisites
+  become: true
+  package:
+    name:
+      - ca-certificates
+      - curl
+    state: present
+  tags:
+    - install
+    - docker
+
+- name: Create keyrings directory
+  become: true
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+  tags:
+    - docker
+
+- name: Add Docker GPG key
+  become: true
+  get_url:
+    url: https://download.docker.com/linux/debian/gpg
+    dest: /etc/apt/keyrings/docker.asc
+    mode: '0644'
+  tags:
+    - docker
+
+- name: Add Docker repository
+  become: true
+  copy:
+    dest: /etc/apt/sources.list.d/docker.sources
+    content: |
+      Types: deb
+      URIs: https://download.docker.com/linux/debian
+      Suites: {{ ansible_facts.distribution_release }}
+      Components: stable
+      Signed-By: /etc/apt/keyrings/docker.asc
+    mode: '0644'
+  register: docker_repo_added
+  tags:
+    - docker
+
+- name: Update apt cache
+  become: true
+  apt:
+    update_cache: true
+  when: docker_repo_added.changed
+  tags:
+    - docker
+
+- name: Install Docker and Compose plugin
+  become: true
+  package:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: present
+  tags:
+    - install
+    - docker
+
+- name: Ensure Docker service is started and enabled
+  become: true
+  systemd:
+    name: docker
+    state: started
+    enabled: true
+  tags:
+    - docker
+
+- name: Add user to docker group
+  become: true
+  user:
+    name: "{{ username }}"
+    groups: docker
+    append: true
+  tags:
+    - docker

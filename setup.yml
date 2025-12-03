@@ -22,6 +22,12 @@
     dotfiles_tags:
       - install
       - dotfiles
+    unattended_tags:
+      - install
+      - unattended-upgrades
+    docker_tags:
+      - install
+      - docker
   gather_facts: true
   pre_tasks:
     - name: Update cache
@@ -34,6 +40,10 @@
       tags:
         - base
         - install
+    - name: Install Docker
+      include_tasks:
+        file: ./tasks/docker.yml
+      tags: "{{ docker_tags }}"
     - name: Setup zsh
       include_tasks:
         file: ./tasks/zsh.yml
@@ -62,3 +72,7 @@
       include_tasks:
         file: ./tasks/dotfiles.yml
       tags: "{{ dotfiles_tags }}"
+    - name: Setup unattended-upgrades
+      include_tasks:
+        file: ./tasks/unattended-upgrades.yml
+      tags: "{{ unattended_tags }}"
