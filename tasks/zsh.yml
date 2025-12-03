@@ -13,7 +13,7 @@
   tags: "{{ zsh_tags }}"
 
 - name: Change shell
-  become: yes
+  become: true
   user:
     name: "{{ username }}"
     shell: "{{ zsh_path.stdout }}"
@@ -29,29 +29,35 @@
   when: not ohmyzsh_stat.stat.exists
   tags: "{{ zsh_tags }}"
 
-- name: Install the zsh plugin completions
+- name: Install the zsh plugin autocompletions
   ansible.builtin.git:
-    repo: 'https://github.com/zsh-users/zsh-completions.git'
-    dest: "~/.oh-my-zsh/plugins/zsh-completions"
+    repo: "https://github.com/marlonrichert/zsh-autocomplete.git"
+    dest: "~/.oh-my-zsh/plugins/zsh-autocompletions"
   tags: "{{ zsh_tags }}"
 
 - name: Install the zsh plugin syntax-highlighting
   ansible.builtin.git:
-    repo: 'https://github.com/zsh-users/zsh-syntax-highlighting.git'
+    repo: "https://github.com/zsh-users/zsh-syntax-highlighting.git"
     dest: "~/.oh-my-zsh/plugins/zsh-syntax-highlighting"
   tags: "{{ zsh_tags }}"
 
 - name: Install the zsh plugin autosuggestions
   ansible.builtin.git:
-    repo: 'https://github.com/zsh-users/zsh-autosuggestions.git'
+    repo: "https://github.com/zsh-users/zsh-autosuggestions.git"
     dest: "~/.oh-my-zsh/plugins/zsh-autosuggestions"
   tags: "{{ zsh_tags }}"
 
-- name: Add zsh-autosuggestions to .zshrc
+- name: Install the zsh plugin fast-syntax-highlighting
+  ansible.builtin.git:
+    repo: "https://github.com/zdharma-continuum/fast-syntax-highlighting.git"
+    dest: "~/.oh-my-zsh/plugins/fast-syntax-highlighting"
+  tags: "{{ zsh_tags }}"
+
+- name: Update plugins .zshrc
   lineinfile:
     path: ~/.zshrc
     regexp: '^plugins=\((.*)\)'
-    line: 'plugins=(git zsh-autosuggestions zsh-syntax-highlighting zsh-completions docker docker-compose kubectl)'
+    line: "plugins=(git zsh-autosuggestions zsh-syntax-highlighting fast-syntax-highlighting zsh-autocomplete docker docker-compose kubectl)"
     backrefs: yes
   tags: "{{ zsh_tags }}"
 

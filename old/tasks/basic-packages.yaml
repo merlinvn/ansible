@@ -1,5 +1,5 @@
 - name: Install all packages ignoring errors
-  include_tasks: tasks/install-package.yaml 
+  include_tasks: tasks/install-package.yaml
   vars:
     package_name: "{{ item }}"
   with_items:
@@ -7,7 +7,7 @@
     - git
     - xclip
     - tmux
-    - exa
+    - eza
     - ripgrep
     - bat
     - fd-find

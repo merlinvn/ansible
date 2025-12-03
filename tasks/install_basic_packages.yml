@@ -17,7 +17,7 @@
         - zsh
         - vim
         - tmux
-        - exa
+        - eza
         - ripgrep
         - bat
         - fd-find
@@ -31,7 +31,7 @@
         - libffi-dev
         - zlib1g-dev
       register: package_result
-      ignore_errors: yes
+      ignore_errors: true
   rescue:
     - name: Check for failure
       debug:

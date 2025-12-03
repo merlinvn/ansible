@@ -1,6 +1,6 @@
 - hosts: new_machine
   vars:
-    username: "{{ ansible_user_id }}"
+    username: "{{ ansible_facts['user_id'] }}"
     zsh_tags:
       - install
       - zsh
