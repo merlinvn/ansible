@@ -22,6 +22,9 @@
     dotfiles_tags:
       - install
       - dotfiles
+    tmux_tags:
+      - install
+      - tmux
     unattended_tags:
       - install
       - unattended-upgrades
@@ -72,6 +75,10 @@
       include_tasks:
         file: ./tasks/dotfiles.yml
       tags: "{{ dotfiles_tags }}"
+    - name: Setup tmux
+      include_tasks:
+        file: ./tasks/tmux.yml
+      tags: "{{ tmux_tags }}"
     - name: Setup unattended-upgrades
       include_tasks:
         file: ./tasks/unattended-upgrades.yml

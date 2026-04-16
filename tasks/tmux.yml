@@ -1,0 +1,8 @@
+- name: Clone TPM
+  ansible.builtin.git:
+    repo: "https://github.com/tmux-plugins/tpm.git"
+    dest: "{{ ansible_facts.user_dir }}/.tmux/plugins/tpm"
+    clone: true
+    update: true
+  tags:
+    - tmux
