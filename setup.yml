@@ -28,6 +28,9 @@
     unattended_tags:
       - install
       - unattended-upgrades
+    locale_tags:
+      - install
+      - locale
     docker_tags:
       - install
       - docker
@@ -38,6 +41,9 @@
       apt:
         update_cache: true
   tasks:
+    - name: Setup locale
+      include_tasks: ./tasks/locale.yml
+      tags: "{{ locale_tags }}"
     - name: Install basic packages
       include_tasks: ./tasks/install_basic_packages.yml
       tags:

@@ -1,0 +1,25 @@
+- name: Install locales
+  become: true
+  package:
+    name:
+      - locales
+    state: present
+  tags:
+    - locale
+
+- name: Configure locale
+  become: true
+  lineinfile:
+    path: /etc/locale.gen
+    regexp: '^#?\s*en_US.UTF-8'
+    line: "en_US.UTF-8 UTF-8"
+    create: true
+  tags:
+    - locale
+
+- name: Generate locale
+  become: true
+  command: locale-gen en_US.UTF-8
+  changed_when: false
+  tags:
+    - locale
