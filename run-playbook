@@ -1,33 +1,227 @@
 #!/bin/sh
-# Run playbook on docker test container
-# Usage: ./run-playbook [--tags TAGS]
+# Setup new machine - CLI tool
+# Usage: ./run-playbook [preset] [target] [options] [--help]
+#
+# Presets:
+#   base    - locale, basic packages, sudo, zsh, git, fzf, dotfiles
+#   dev     - base + rust, mise, node, tmux
+#   full    - dev + unattended-upgrades, docker, chrony
+#   minimal - only essential packages
+#
+# Targets:
+#   docker  - Use Docker test container (default)
+#   local   - Run locally
+#   remote  - Use hosts file (pi5-neo.local)
 
-# Ensure container is running
-if ! docker ps --format '{{.Names}}' | grep -q ubuntu_test_container; then
-    echo "Starting docker test environment..."
-    ./docker-build
-    ./docker-run
-    sleep 2
-fi
+set -e
 
-# Build inventory for docker
-DOCKER_INVENTORY=$(mktemp)
-cat > "$DOCKER_INVENTORY" << 'EOF'
+# Colors
+BOLD='\033[1m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+# Tags mapping
+BASE_TAGS="locale,base,install,zsh,git,fzf,dotfiles"
+DEV_TAGS="locale,base,install,zsh,git,fzf,dotfiles,rust,mise,node,tmux"
+FULL_TAGS="all"
+MINIMAL_TAGS="locale,base,install"
+
+# All available tags
+ALL_TAGS="base install zsh git fzf rust mise node dotfiles tmux unattended-upgrades docker chrony locale"
+
+# Show help
+show_help() {
+    echo "Usage: ./run-playbook [preset] [target] [options]"
+    echo ""
+    echo "Presets:"
+    echo "  base    - Basic setup (locale, packages, zsh, git, fzf, dotfiles)"
+    echo "  dev     - Development (base + rust, mise, node, tmux)"
+    echo "  full    - Full setup (dev + unattended-upgrades, docker, chrony)"
+    echo "  minimal - Minimal packages only"
+    echo ""
+    echo "Targets:"
+    echo "  docker  - Docker test container (default)"
+    echo "  local   - Run locally (sudo)"
+    echo "  remote  - Use hosts file (pi5-neo.local)"
+    echo ""
+    echo "Options:"
+    echo "  --tags TAGS    - Run specific tags (comma-separated)"
+    echo "  --list        - List available tags"
+    echo "  --help        - Show this help"
+    echo ""
+    echo "Examples:"
+    echo "  ./run-playbook           # Interactive mode"
+    echo "  ./run-playbook base      # Base preset on Docker"
+    echo "  ./run-playbook dev remote # Dev preset on remote machine"
+    echo "  ./run-playbook --tags zsh,git  # Custom tags on Docker"
+    echo "  ./run-playbook --list    # List all tags"
+}
+
+# List tags
+list_tags() {
+    echo "${BOLD}Available tags:${NC}"
+    for tag in $ALL_TAGS; do
+        echo "  $tag"
+    done
+}
+
+# Docker inventory
+get_docker_inventory() {
+    cat > /tmp/docker_hosts_$$ << 'EOF'
 [new_machine]
 localhost ansible_port=2222 ansible_user=ubuntu ansible_password=ubuntu ansible_become_password=ubuntu ansible_python_interpreter=/usr/bin/python3
 EOF
+    echo /tmp/docker_hosts_$$
+}
 
-# Parse tags argument
+# Local inventory
+get_local_inventory() {
+    cat > /tmp/local_hosts_$$ << 'EOF'
+[new_machine]
+localhost ansible_connection=local ansible_become_password=sudo
+EOF
+    echo /tmp/local_hosts_$$
+}
+
+# Remote inventory
+get_remote_inventory() {
+    echo hosts
+}
+
+# Ensure docker is running
+ensure_docker() {
+    if ! docker ps --format '{{.Names}}' 2>/dev/null | grep -q ubuntu_test_container; then
+        echo "${YELLOW}Starting docker test environment...${NC}"
+        ./docker-build 2>/dev/null
+        ./docker-run 2>/dev/null
+        sleep 2
+    fi
+}
+
+# Run ansible
+run_playbook() {
+    INVENTORY=$1
+    TAGS=$2
+
+    if [ "$TARGET" = "docker" ]; then
+        ensure_docker
+    fi
+
+    ansible-playbook -i "$INVENTORY" setup.yml --tags "$TAGS"
+}
+
+# Parse arguments
+# Handle options first
+case "${1:-}" in
+    --help|-h)
+        show_help
+        exit 0
+        ;;
+    --list|-l)
+        list_tags
+        exit 0
+        ;;
+esac
+
+# Parse preset
+PRESET=""
 TAGS=""
-if [ "$1" = "--tags" ] && [ -n "$2" ]; then
-    TAGS="--tags $2"
+case "${1:-}" in
+    base|dev|full|minimal)
+        PRESET="$1"
+        shift
+        ;;
+    --tags=*)
+        TAGS=$(echo "$1" | cut -d= -f2)
+        shift
+        ;;
+    --tags|-t)
+        TAGS="$2"
+        shift 2
+        ;;
+esac
+
+# Parse target
+TARGET="${1:-docker}"
+case $TARGET in
+    docker|local|remote) ;;
+    *) echo "Unknown target: $TARGET"; show_help; exit 1 ;;
+esac
+
+# Parse remaining args
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --tags=*) TAGS=$(echo "$1" | cut -d= -f2) ;;
+        --tags|-t) TAGS="$2"; shift ;;
+        docker|local|remote) TARGET="$1" ;;
+    esac
+    shift
+done
+
+# Set tags from preset
+if [ -z "$TAGS" ] && [ -n "$PRESET" ]; then
+    case $PRESET in
+        base) TAGS="$BASE_TAGS" ;;
+        dev) TAGS="$DEV_TAGS" ;;
+        full) TAGS="$FULL_TAGS" ;;
+        minimal) TAGS="$MINIMAL_TAGS" ;;
+    esac
 fi
 
-# Run playbook
-ansible-playbook -i "$DOCKER_INVENTORY" setup.yml $TAGS
-RESULT=$?
+# Get inventory
+case $TARGET in
+    docker) INVENTORY=$(get_docker_inventory) ;;
+    local) INVENTORY=$(get_local_inventory) ;;
+    remote) INVENTORY=$(get_remote_inventory) ;;
+esac
+
+# Run
+if [ -z "$TAGS" ]; then
+    # Interactive mode
+    echo "${BOLD}Select setup:${NC}"
+    echo "  1) base    - Basic setup (locale, packages, zsh, git, fzf, dotfiles)"
+    echo "  2) dev     - Development (base + rust, mise, node, tmux)"
+    echo "  3) full    - Full setup (dev + unattended-upgrades, docker, chrony)"
+    echo "  4) minimal - Minimal packages only"
+    echo "  5) custom  - Enter custom tags"
+    echo ""
+    printf "Select (1-5): "
+    read choice
+
+    echo "${BOLD}Select target:${NC}"
+    echo "  1) docker  - Docker test container"
+    echo "  2) local  - Run locally"
+    echo "  3) remote - Use hosts file"
+    echo ""
+    printf "Select (1-3): "
+    read target
+
+    case $choice in
+        1) TAGS="$BASE_TAGS" ;;
+        2) TAGS="$DEV_TAGS" ;;
+        3) TAGS="$FULL_TAGS" ;;
+        4) TAGS="$MINIMAL_TAGS" ;;
+        5)
+            echo "${BOLD}Available tags:${NC}"
+            for tag in $ALL_TAGS; do echo "  $tag"; done
+            echo ""
+            printf "Enter tags (comma-separated): "
+            read TAGS
+            ;;
+        *) echo "Invalid choice"; exit 1 ;;
+    esac
+
+    case $target in
+        1) TARGET=docker; INVENTORY=$(get_docker_inventory) ;;
+        2) TARGET=local; INVENTORY=$(get_local_inventory) ;;
+        3) TARGET=remote; INVENTORY=$(get_remote_inventory) ;;
+        *) echo "Invalid target"; exit 1 ;;
+    esac
+fi
+
+run_playbook "$INVENTORY" "$TAGS"
 
 # Cleanup
-rm -f "$DOCKER_INVENTORY"
-
-exit $RESULT
+rm -f /tmp/docker_hosts_$$ /tmp/local_hosts_$$ 2>/dev/null

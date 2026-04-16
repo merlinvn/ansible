@@ -1,0 +1,67 @@
+#!/bin/bash
+# Bootstrap script - install ansible and setup new machine
+# Usage: ./bootstrap [preset] [target]
+#
+# Examples:
+#   ./bootstrap              # Interactive mode
+#   ./bootstrap full local   # Full setup on local machine
+#   ./bootstrap dev remote   # Dev setup on remote machine
+
+set -e
+
+# Colors
+BOLD='\033[1m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+NC='\033[0m'
+
+echo "${BOLD}Bootstrapping Ansible...${NC}"
+
+# Detect OS
+if [ -f /etc/os-release ]; then
+    . /etc/os-release
+    OS=$ID
+else
+    OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+fi
+
+echo "Detected OS: $OS"
+
+# Install ansible based on OS
+install_ansible() {
+    case $OS in
+        ubuntu|debian)
+            echo "${YELLOW}Installing ansible via apt...${NC}"
+            sudo apt update
+            sudo apt install -y ansible
+            ;;
+        fedora|rhel|centos)
+            echo "${YELLOW}Installing ansible via dnf...${NC}"
+            sudo dnf install -y ansible
+            ;;
+        arch)
+            echo "${YELLOW}Installing ansible via pacman...${NC}"
+            sudo pacman -Sy --noconfirm ansible
+            ;;
+        darwin)
+            echo "${YELLOW}Installing ansible via brew...${NC}"
+            brew install ansible
+            ;;
+        *)
+            echo "Unsupported OS: $OS"
+            exit 1
+            ;;
+    esac
+}
+
+# Check if ansible is installed
+if ! command -v ansible &> /dev/null; then
+    install_ansible
+else
+    echo "Ansible already installed: $(ansible --version | head -1)"
+fi
+
+# Run the playbook
+echo ""
+echo "${BOLD}Running playbook...${NC}"
+./run-playbook "$@"
