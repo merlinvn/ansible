@@ -31,6 +31,9 @@
     locale_tags:
       - install
       - locale
+    chrony_tags:
+      - install
+      - chrony
     docker_tags:
       - install
       - docker
@@ -44,6 +47,9 @@
     - name: Setup locale
       include_tasks: ./tasks/locale.yml
       tags: "{{ locale_tags }}"
+    - name: Setup chrony
+      include_tasks: ./tasks/chrony.yml
+      tags: "{{ chrony_tags }}"
     - name: Install basic packages
       include_tasks: ./tasks/install_basic_packages.yml
       tags:
@@ -89,3 +95,9 @@
       include_tasks:
         file: ./tasks/unattended-upgrades.yml
       tags: "{{ unattended_tags }}"
+  handlers:
+    - name: Restart chrony
+      become: true
+      systemd:
+        name: chrony
+        state: restarted

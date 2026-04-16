@@ -1,0 +1,45 @@
+- name: Check if running in Docker
+  stat:
+    path: /.dockerenv
+  register: dockerenv_file
+
+- name: Install chrony
+  become: true
+  package:
+    name: chrony
+    state: present
+  when: not dockerenv_file.stat.exists
+
+- name: Configure chrony
+  become: true
+  copy:
+    dest: /etc/chrony/chrony.conf
+    content: |
+      # Pool servers
+      pool 2.pool.ntp.org iburst
+      pool 0.pool.ntp.org iburst
+      pool 1.pool.ntp.org iburst
+
+      # Record the rate at which the system gains/lose time
+      driftfile /var/lib/chrony/chrony.drift
+
+      # Allow large network offset, important for VMs
+      maxdistance 10.0
+
+      # Step the system clock if offset is larger than 1 second
+      makestep 1.0 -1
+
+      # Enable kernel synchronization of the real-time clock (RTC)
+      rtcsync
+
+      # In case of network issues, jump the clock instead of stepping
+      reselectdist 0.1
+    backup: true
+  when: not dockerenv_file.stat.exists
+
+- name: Start chrony
+  become: true
+  command: chronyd
+  changed_when: false
+  failed_when: false
+  when: not dockerenv_file.stat.exists
