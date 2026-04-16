@@ -1,30 +1,39 @@
-## Setup new machine remotely
+# Ansible Setup
 
-Edit `hosts` file and run:
+Provision Ubuntu developer machines with tools, shell setup, dotfiles, and auto-security upgrades.
 
+## Quick Start
+
+### Remote machine
 ```sh
 ansible-playbook -i hosts setup.yml -K --tags all
 ```
 
-## Setup new machine locally
-
+### Docker dev environment
 ```sh
-ansible-playbook setup.yml -K --tags all
+./run-playbook --tags all
 ```
 
-## Dev env
+## Development
 
-Provision an Ubuntu VM using `docker`
 ```sh
-./docker-build
-./docker-run
+# Syntax check
+ansible-playbook setup.yml --syntax-check
+
+# Lint
+ansible-lint .
+
+# Run specific tags
+./run-playbook --tags base,zsh,git
+
+# Docker workflow
+./docker-build   # build image
+./docker-run     # start container
+./docker-reset   # restart
 ```
 
-Reset the VM by `./docker-reset`
-
-
-Test the VM by ssh:
+## SSH to Docker
 
 ```sh
-ssh ubutu@localhost -p 2222
+ssh -p 2222 ubuntu@localhost  # password: ubuntu
 ```

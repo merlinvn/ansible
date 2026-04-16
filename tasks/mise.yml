@@ -1,4 +1,4 @@
-- name: Install curl
+- name: Install curl and dev libraries for Mise
   become: true
   package:
     name:
@@ -9,15 +9,22 @@
     state: present
   tags: "{{ mise_tags }}"
 
-- name: Install Mise using its install script
-  shell: curl https://mise.jdx.dev/install.sh | sh
+- name: Check if mise is installed
+  command: command -v mise
+  register: mise_exists
+  changed_when: false
+  failed_when: false
   tags: "{{ mise_tags }}"
 
-- name: activate mise
+- name: Install Mise
+  shell: curl https://mise.jdx.dev/install.sh | sh
+  when: mise_exists.rc != 0
+  tags: "{{ mise_tags }}"
+
+- name: Add mise activation to .zshrc
   lineinfile:
-    path: ~/.zshrc
+    path: "{{ ansible_facts.user_dir }}/.zshrc"
     line: 'eval "$(~/.local/bin/mise activate zsh)"'
-    create: yes
-    state: present
+    create: true
     insertafter: EOF
   tags: "{{ mise_tags }}"

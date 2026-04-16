@@ -1,4 +1,4 @@
-- name: Install zsh
+- name: Install zsh and git
   become: true
   package:
     name:
@@ -10,67 +10,89 @@
 - name: Get zsh path
   command: which zsh
   register: zsh_path
+  changed_when: false
   tags: "{{ zsh_tags }}"
 
-- name: Change shell
+- name: Change shell for user
   become: true
   user:
     name: "{{ username }}"
     shell: "{{ zsh_path.stdout }}"
+  tags: "{{ zsh_tags }}"
 
-- name: Check if .oh-my-zsh exists
+- name: Check if oh-my-zsh exists
   stat:
-    path: ~/.oh-my-zsh
+    path: "{{ ansible_facts.user_dir }}/.oh-my-zsh"
   register: ohmyzsh_stat
   tags: "{{ zsh_tags }}"
 
 - name: Install oh-my-zsh
-  shell: curl -L https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh | sh
+  shell: |
+    set -e
+    sh -c "$(curl -L https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
   when: not ohmyzsh_stat.stat.exists
   tags: "{{ zsh_tags }}"
 
-- name: Install the zsh plugin autocompletions
+- name: Clone oh-my-zsh repository
+  ansible.builtin.git:
+    repo: "https://github.com/ohmyzsh/ohmyzsh.git"
+    dest: "{{ ansible_facts.user_dir }}/.oh-my-zsh"
+    clone: true
+    update: true
+  when: not ohmyzsh_stat.stat.exists
+  tags: "{{ zsh_tags }}"
+
+- name: Install zsh-autocomplete plugin
   ansible.builtin.git:
     repo: "https://github.com/marlonrichert/zsh-autocomplete.git"
-    dest: "~/.oh-my-zsh/plugins/zsh-autocompletions"
+    dest: "{{ ansible_facts.user_dir }}/.oh-my-zsh/plugins/zsh-autocomplete"
   tags: "{{ zsh_tags }}"
 
-- name: Install the zsh plugin syntax-highlighting
+- name: Install zsh-syntax-highlighting plugin
   ansible.builtin.git:
     repo: "https://github.com/zsh-users/zsh-syntax-highlighting.git"
-    dest: "~/.oh-my-zsh/plugins/zsh-syntax-highlighting"
+    dest: "{{ ansible_facts.user_dir }}/.oh-my-zsh/plugins/zsh-syntax-highlighting"
   tags: "{{ zsh_tags }}"
 
-- name: Install the zsh plugin autosuggestions
+- name: Install zsh-autosuggestions plugin
   ansible.builtin.git:
     repo: "https://github.com/zsh-users/zsh-autosuggestions.git"
-    dest: "~/.oh-my-zsh/plugins/zsh-autosuggestions"
+    dest: "{{ ansible_facts.user_dir }}/.oh-my-zsh/plugins/zsh-autosuggestions"
   tags: "{{ zsh_tags }}"
 
-- name: Install the zsh plugin fast-syntax-highlighting
+- name: Install fast-syntax-highlighting plugin
   ansible.builtin.git:
     repo: "https://github.com/zdharma-continuum/fast-syntax-highlighting.git"
-    dest: "~/.oh-my-zsh/plugins/fast-syntax-highlighting"
+    dest: "{{ ansible_facts.user_dir }}/.oh-my-zsh/plugins/fast-syntax-highlighting"
   tags: "{{ zsh_tags }}"
 
-- name: Update plugins .zshrc
+- name: Update plugins in .zshrc
   lineinfile:
-    path: ~/.zshrc
-    regexp: '^plugins=\((.*)\)'
+    path: "{{ ansible_facts.user_dir }}/.zshrc"
+    regexp: '^plugins=\(.*\)$'
     line: "plugins=(git zsh-autosuggestions zsh-syntax-highlighting fast-syntax-highlighting zsh-autocomplete docker docker-compose kubectl)"
-    backrefs: yes
+    backrefs: true
   tags: "{{ zsh_tags }}"
 
-- name: Install starship
+- name: Install starship prompt
   become: true
-  shell: curl -fsSL https://starship.rs/install.sh | sh -s -- -y
+  ansible.builtin.get_url:
+    url: https://starship.rs/install.sh
+    dest: /tmp/starship-install.sh
+    mode: '0755'
   tags: "{{ zsh_tags }}"
 
-- name: Append starship init to .zshrc
+- name: Run starship install script
+  become: true
+  shell: /tmp/starship-install.sh -y
+  args:
+    creates: /usr/local/bin/starship
+  tags: "{{ zsh_tags }}"
+
+- name: Add starship init to .zshrc
   lineinfile:
-    path: ~/.zshrc
+    path: "{{ ansible_facts.user_dir }}/.zshrc"
     line: 'eval "$(starship init zsh)"'
-    create: yes
-    state: present
+    create: true
     insertafter: EOF
   tags: "{{ zsh_tags }}"

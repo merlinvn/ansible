@@ -1,41 +1,32 @@
 - name: Update package cache
   become: true
-  package:
-    update_cache: yes
+  apt:
+    update_cache: true
   tags:
     - install
+
 - name: Install basic packages
   become: true
-  block:
-    - name: Install package
-      package:
-        name: "{{ item }}"
-        state: present
-      loop:
-        - curl
-        - git
-        - zsh
-        - vim
-        - tmux
-        - eza
-        - ripgrep
-        - bat
-        - fd-find
-        - fortune
-        - cowsay
-        - autojump
-        - stow
-        - jq
-        - build-essential
-        - libssl-dev
-        - libffi-dev
-        - zlib1g-dev
-      register: package_result
-      ignore_errors: true
-  rescue:
-    - name: Check for failure
-      debug:
-        msg: "Failed to install {{ item }}. Error: {{ package_result.msg }}"
-      when: package_result is failed
+  apt:
+    name:
+      - curl
+      - git
+      - zsh
+      - vim
+      - tmux
+      - eza
+      - ripgrep
+      - bat
+      - fd-find
+      - fortune
+      - cowsay
+      - autojump
+      - stow
+      - jq
+      - build-essential
+      - libssl-dev
+      - libffi-dev
+      - zlib1g-dev
+    state: present
   tags:
     - install

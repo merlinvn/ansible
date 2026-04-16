@@ -1,9 +1,27 @@
+- name: Check if fzf is installed
+  command: command -v fzf
+  register: fzf_exists
+  changed_when: false
+  failed_when: false
+  tags: "{{ fzf_tags }}"
+
 - name: Clone fzf repository
   ansible.builtin.git:
     repo: 'https://github.com/junegunn/fzf.git'
-    dest: "~/.fzf"
+    dest: "{{ ansible_facts.user_dir }}/.fzf"
+  when: fzf_exists.rc != 0
   tags: "{{ fzf_tags }}"
 
 - name: Install fzf
-  shell: "yes | ~/.fzf/install"
+  shell: "{{ ansible_facts.user_dir }}/.fzf/install --all"
+  when: fzf_exists.rc != 0
+  tags: "{{ fzf_tags }}"
+
+- name: Install fzf binary (if not installed via script)
+  shell: |
+    version=$(curl -s https://api.github.com/repos/junegunn/fzf/releases/latest 2>/dev/null | grep -o '"tag_name": "v[^"]*' | cut -d'"' -f4 | sed 's/v//')
+    curl -sL "https://github.com/junegunn/fzf/releases/download/v${version}/fzf-${version}-linux_amd64.tar.gz" | tar -xz -C /tmp
+    mv /tmp/fzf-*/fzf /usr/local/bin/ 2>/dev/null || true
+  become: true
+  when: fzf_exists.rc != 0
   tags: "{{ fzf_tags }}"

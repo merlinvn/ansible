@@ -1,0 +1,33 @@
+#!/bin/sh
+# Run playbook on docker test container
+# Usage: ./run-playbook [--tags TAGS]
+
+# Ensure container is running
+if ! docker ps --format '{{.Names}}' | grep -q ubuntu_test_container; then
+    echo "Starting docker test environment..."
+    ./docker-build
+    ./docker-run
+    sleep 2
+fi
+
+# Build inventory for docker
+DOCKER_INVENTORY=$(mktemp)
+cat > "$DOCKER_INVENTORY" << 'EOF'
+[new_machine]
+localhost ansible_port=2222 ansible_user=ubuntu ansible_password=ubuntu ansible_become_password=ubuntu ansible_python_interpreter=/usr/bin/python3
+EOF
+
+# Parse tags argument
+TAGS=""
+if [ "$1" = "--tags" ] && [ -n "$2" ]; then
+    TAGS="--tags $2"
+fi
+
+# Run playbook
+ansible-playbook -i "$DOCKER_INVENTORY" setup.yml $TAGS
+RESULT=$?
+
+# Cleanup
+rm -f "$DOCKER_INVENTORY"
+
+exit $RESULT
