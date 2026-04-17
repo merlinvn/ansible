@@ -1,0 +1,21 @@
+- name: Create neo user
+  ansible.builtin.user:
+    name: neo
+    shell: /bin/zsh
+    groups: sudo
+    append: true
+  when: ansible_facts['user_id'] != 'neo'
+
+- name: Copy SSH authorized keys
+  ansible.posix.authorized_key:
+    user: neo
+    state: present
+    follow: false
+  when: ansible_facts['user_id'] != 'neo'
+  become: true
+  become_user: neo
+
+- name: Ensure sudo group exists
+  ansible.builtin.group:
+    name: sudo
+    state: present

@@ -37,6 +37,18 @@
     docker_tags:
       - install
       - docker
+    bootstrap_tags:
+      - install
+      - bootstrap
+    user_tags:
+      - install
+      - user
+    pyenv_tags:
+      - install
+      - pyenv
+    nvm_tags:
+      - install
+      - nvm
   gather_facts: true
   pre_tasks:
     - name: Update cache
@@ -79,10 +91,15 @@
       include_tasks:
         file: ./tasks/mise.yml
       tags: "{{ mise_tags }}"
-    - name: Setup node
-      include_tasks:
-        file: ./tasks/node.yml
-      tags: "{{ node_tags }}"
+    - name: Create neo user
+      include_tasks: ./tasks/user.yml
+      tags: "{{ bootstrap_tags }}"
+    - name: Setup pyenv
+      include_tasks: ./tasks/pyenv.yml
+      tags: "{{ pyenv_tags }}"
+    - name: Setup nvm
+      include_tasks: ./tasks/nvm.yml
+      tags: "{{ nvm_tags }}"
     - name: Setup dotfiles
       include_tasks:
         file: ./tasks/dotfiles.yml

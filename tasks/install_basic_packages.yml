@@ -18,9 +18,9 @@
       - ripgrep
       - bat
       - fd-find
-      - bat
       - fortune
-      - cowsay
+      - rsync
+      - fzf
       - autojump
       - stow
       - jq
