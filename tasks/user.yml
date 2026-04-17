@@ -4,18 +4,31 @@
     shell: /bin/zsh
     groups: sudo
     append: true
-  when: ansible_facts['user_id'] != 'neo'
+  tags: "{{ bootstrap_tags }}"
 
-- name: Copy SSH authorized keys
-  ansible.posix.authorized_key:
-    user: neo
-    state: present
-    follow: false
-  when: ansible_facts['user_id'] != 'neo'
+- name: Setup passwordless sudo for neo
   become: true
-  become_user: neo
+  lineinfile:
+    path: /etc/sudoers.d/neo
+    line: "neo ALL=(ALL) NOPASSWD: ALL"
+    create: true
+    mode: "0440"
+  tags: "{{ bootstrap_tags }}"
+
+- name: Copy SSH authorized keys from root
+  become: true
+  shell: |
+    if [ -f /root/.ssh/authorized_keys ]; then
+      mkdir -p /home/neo/.ssh
+      chmod 700 /home/neo/.ssh
+      cp /root/.ssh/authorized_keys /home/neo/.ssh/authorized_keys
+      chmod 600 /home/neo/.ssh/authorized_keys
+      chown -R neo:neo /home/neo/.ssh
+    fi
+  tags: "{{ bootstrap_tags }}"
 
 - name: Ensure sudo group exists
   ansible.builtin.group:
     name: sudo
     state: present
+  tags: "{{ bootstrap_tags }}"

@@ -3,12 +3,3 @@
     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
   args:
     creates: /home/{{ ansible_facts['user_id'] }}/.nvm
-  when: ansible_facts['user_id'] != 'root'
-
-- name: Add nvm to .zshrc
-  ansible.builtin.lineinfile:
-    path: /home/{{ ansible_facts['user_id'] }}/.zshrc
-    line: 'export NVM_DIR="$HOME/.nvm"'
-    state: present
-    create: true
-  when: ansible_facts['user_id'] != 'root'

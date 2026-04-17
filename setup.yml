@@ -56,6 +56,9 @@
       apt:
         update_cache: true
   tasks:
+    - name: Create neo user
+      include_tasks: ./tasks/user.yml
+      tags: "{{ bootstrap_tags }}"
     - name: Setup locale
       include_tasks: ./tasks/locale.yml
       tags: "{{ locale_tags }}"
@@ -91,9 +94,6 @@
       include_tasks:
         file: ./tasks/mise.yml
       tags: "{{ mise_tags }}"
-    - name: Create neo user
-      include_tasks: ./tasks/user.yml
-      tags: "{{ bootstrap_tags }}"
     - name: Setup pyenv
       include_tasks: ./tasks/pyenv.yml
       tags: "{{ pyenv_tags }}"

@@ -1,148 +1,17 @@
-- name: Check if running in Docker container
-  become: false
-  stat:
-    path: /.dockerenv
-  register: dockerenv_file
-  tags:
-    - install
-    - docker
-
-- name: Check for docker in cgroup
-  become: false
+- name: Check if running in Docker
   command: grep -q docker /proc/1/cgroup 2>/dev/null || echo "not_docker"
   register: docker_cgroup
   changed_when: false
   failed_when: false
-  tags:
-    - install
-    - docker
+  tags: "{{ docker_tags }}"
 
-- name: Set fact if running in Docker
-  set_fact:
-    running_in_docker: "{{ dockerenv_file.stat.exists or 'docker' in docker_cgroup.stdout }}"
-  tags:
-    - install
-    - docker
-
-- name: Skip Docker installation in Docker container
-  set_fact:
-    docker_install_skipped: true
-  when: running_in_docker | default(false) | bool
-  tags:
-    - install
-    - docker
-
-- name: Uninstall old Docker versions
+- name: Install Docker via convenience script
   become: true
-  package:
-    name:
-      - docker.io
-      - docker-compose
-      - docker-doc
-      - podman-docker
-      - containerd
-      - runc
-    state: absent
-  when: not (running_in_docker | default(false) | bool)
-  tags:
-    - docker
-
-- name: Install Docker prerequisites
-  become: true
-  package:
-    name:
-      - ca-certificates
-      - curl
-    state: present
-  when: not (running_in_docker | default(false) | bool)
-  tags:
-    - install
-    - docker
-
-- name: Create keyrings directory
-  become: true
-  file:
-    path: /etc/apt/keyrings
-    state: directory
-    mode: '0755'
-  when: not (running_in_docker | default(false) | bool)
-  tags:
-    - docker
-
-- name: Add Docker GPG key for Ubuntu
-  become: true
-  get_url:
-    url: https://download.docker.com/linux/ubuntu/gpg
-    dest: /etc/apt/keyrings/docker.asc
-    mode: '0644'
-  when: not (running_in_docker | default(false) | bool) and ansible_facts.os_family == "Debian" and ansible_facts.distribution == "Ubuntu"
-  tags:
-    - docker
-
-- name: Add Docker GPG key for Debian
-  become: true
-  get_url:
-    url: https://download.docker.com/linux/debian/gpg
-    dest: /etc/apt/keyrings/docker.asc
-    mode: '0644'
-  when: not (running_in_docker | default(false) | bool) and ansible_facts.os_family == "Debian" and ansible_facts.distribution == "Debian"
-  tags:
-    - docker
-
-- name: Add Docker repository for Ubuntu
-  become: true
-  copy:
-    dest: /etc/apt/sources.list.d/docker.sources
-    content: |
-      Types: deb
-      URIs: https://download.docker.com/linux/ubuntu
-      Suites: {{ ansible_facts.distribution_release }}
-      Components: stable
-      Signed-By: /etc/apt/keyrings/docker.asc
-    mode: '0644'
-  when: not (running_in_docker | default(false) | bool) and ansible_facts.os_family == "Debian" and ansible_facts.distribution == "Ubuntu"
-  register: docker_repo_added
-  tags:
-    - docker
-
-- name: Add Docker repository for Debian
-  become: true
-  copy:
-    dest: /etc/apt/sources.list.d/docker.sources
-    content: |
-      Types: deb
-      URIs: https://download.docker.com/linux/debian
-      Suites: {{ ansible_facts.distribution_release }}
-      Components: stable
-      Signed-By: /etc/apt/keyrings/docker.asc
-    mode: '0644'
-  when: not (running_in_docker | default(false) | bool) and ansible_facts.os_family == "Debian" and ansible_facts.distribution == "Debian"
-  register: docker_repo_added
-  tags:
-    - docker
-
-- name: Update apt cache
-  become: true
-  apt:
-    update_cache: true
-  when: not (running_in_docker | default(false) | bool) and (docker_repo_added.changed | default(false) | bool)
-  tags:
-    - docker
-
-- name: Install Docker and Compose plugin
-  become: true
-  package:
-    name:
-      - docker-ce
-      - docker-ce-cli
-      - containerd.io
-      - docker-buildx-plugin
-      - docker-compose-plugin
-    state: present
-  when: not (running_in_docker | default(false) | bool)
-  tags:
-    - install
-    - docker
+  shell: |
+    curl -fsSL https://get.docker.com -o /tmp/get-docker.sh
+    sh /tmp/get-docker.sh
+  when: "'docker' not in docker_cgroup.stdout"
+  tags: "{{ docker_tags }}"
 
 - name: Ensure Docker service is started and enabled
   become: true
@@ -150,9 +19,7 @@
     name: docker
     state: started
     enabled: true
-  when: not (running_in_docker | default(false) | bool)
-  tags:
-    - docker
+  tags: "{{ docker_tags }}"
 
 - name: Add user to docker group
   become: true
@@ -160,6 +27,4 @@
     name: "{{ username }}"
     groups: docker
     append: true
-  when: not (running_in_docker | default(false) | bool)
-  tags:
-    - docker
+  tags: "{{ docker_tags }}"

@@ -6,18 +6,3 @@
       - libssl-dev
       - libffi-dev
     state: present
-
-- name: Clone pyenv
-  ansible.builtin.git:
-    repo: https://github.com/pyenv/pyenv.git
-    dest: /home/{{ ansible_facts['user_id'] }}/.pyenv
-    depth: 1
-  when: ansible_facts['user_id'] != 'root'
-
-- name: Setup pyenv in .zshrc
-  ansible.builtin.lineinfile:
-    path: /home/{{ ansible_facts['user_id'] }}/.zshrc
-    line: 'export PYENV_ROOT="$HOME/.pyenv"'
-    state: present
-    create: true
-  when: ansible_facts['user_id'] != 'root'
