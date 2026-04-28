@@ -2,53 +2,37 @@
   vars:
     username: "{{ ansible_facts['user_id'] }}"
     zsh_tags:
-      - install
       - zsh
     git_tags:
-      - install
       - git
     fzf_tags:
-      - install
       - fzf
-    rust_tags:
-      - install
-      - rust
-    mise_tags:
-      - install
-      - mise
-      - node
-    node_tags:
-      - node
     dotfiles_tags:
-      - install
       - dotfiles
     tmux_tags:
-      - install
       - tmux
-    unattended_tags:
-      - install
-      - unattended-upgrades
-    locale_tags:
-      - install
-      - locale
     chrony_tags:
-      - install
       - chrony
     docker_tags:
-      - install
       - docker
     bootstrap_tags:
-      - install
       - bootstrap
     user_tags:
-      - install
       - user
     pyenv_tags:
-      - install
       - pyenv
     nvm_tags:
-      - install
       - nvm
+    lazygit_tags:
+      - lazygit
+    locale_tags:
+      - locale
+    rust_tags:
+      - rust
+    mise_tags:
+      - mise
+    unattended_tags:
+      - unattended-upgrades
   gather_facts: true
   pre_tasks:
     - name: Update cache
@@ -69,7 +53,6 @@
       include_tasks: ./tasks/install_basic_packages.yml
       tags:
         - base
-        - install
     - name: Install Docker
       include_tasks:
         file: ./tasks/docker.yml
@@ -100,6 +83,9 @@
     - name: Setup nvm
       include_tasks: ./tasks/nvm.yml
       tags: "{{ nvm_tags }}"
+    - name: Setup lazygit
+      include_tasks: ./tasks/lazygit.yml
+      tags: "{{ lazygit_tags }}"
     - name: Setup dotfiles
       include_tasks:
         file: ./tasks/dotfiles.yml

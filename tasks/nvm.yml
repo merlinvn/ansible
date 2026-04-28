@@ -1,5 +1,8 @@
 - name: Install nvm
-  ansible.builtin.shell: |
+  shell: |
+    export NVM_DIR="$HOME/.nvm"
     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
   args:
-    creates: /home/{{ ansible_facts['user_id'] }}/.nvm
+    creates: "{{ ansible_facts.user_dir }}/.nvm"
+  tags: "{{ nvm_tags }}"
+

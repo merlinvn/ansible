@@ -1,8 +1,20 @@
-- name: Install pyenv dependencies
-  apt:
-    name:
-      - build-essential
-      - zlib1g-dev
-      - libssl-dev
-      - libffi-dev
-    state: present
+- name: Install pyenv
+  shell: |
+    curl https://pyenv.run | bash
+  when: not ansible_facts.user_dir + '/.pyenv' is exists
+  tags: "{{ pyenv_tags }}"
+
+- name: Add pyenv to .bashrc
+  lineinfile:
+    path: "{{ ansible_facts.user_dir }}/.bashrc"
+    line: 'export PYENV_ROOT="$HOME/.pyenv"'
+    create: true
+  tags: "{{ pyenv_tags }}"
+
+- name: Install Python via pyenv
+  shell: |
+    export PYENV_ROOT="$HOME/.pyenv"
+    export PATH="$PYENV_ROOT/bin:$PATH"
+    pyenv install 3.12 2>/dev/null || true
+    pyenv global 3.12
+  tags: "{{ pyenv_tags }}"

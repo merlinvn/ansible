@@ -3,7 +3,7 @@
   apt:
     update_cache: true
   tags:
-    - install
+    - base
 
 - name: Install basic packages
   become: true
@@ -30,4 +30,4 @@
       - zlib1g-dev
     state: present
   tags:
-    - install
+    - base

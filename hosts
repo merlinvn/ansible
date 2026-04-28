@@ -1,3 +1,5 @@
 [new_machine]
 pi5-neo.local ansible_port=22 ansible_user=neo ansible_ssh_private_key_file=~/.ssh/id_ed25519
 vps-neo ansible_host=10.10.50.230 ansible_port=22 ansible_user=neo ansible_ssh_private_key_file=~/.ssh/id_rsa
+openclaw-trinity ansible_host=10.10.50.240 ansible_port=22 ansible_user=neo ansible_ssh_private_key_file=~/.ssh/id_rsa
+pi4-argon-one ansible_host=10.10.50.139 ansible_port=22 ansible_user=neo ansible_ssh_private_key_file=~/.ssh/id_rsa

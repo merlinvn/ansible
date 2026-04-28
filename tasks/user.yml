@@ -1,7 +1,7 @@
 - name: Create neo user
   ansible.builtin.user:
     name: neo
-    shell: /bin/zsh
+    shell: /bin/bash
     groups: sudo
     append: true
   tags: "{{ bootstrap_tags }}"
