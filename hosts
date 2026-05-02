@@ -3,3 +3,4 @@ pi5-neo.local ansible_port=22 ansible_user=neo ansible_ssh_private_key_file=~/.s
 vps-neo ansible_host=10.10.50.230 ansible_port=22 ansible_user=neo ansible_ssh_private_key_file=~/.ssh/id_rsa
 openclaw-trinity ansible_host=10.10.50.240 ansible_port=22 ansible_user=neo ansible_ssh_private_key_file=~/.ssh/id_rsa
 pi4-argon-one ansible_host=10.10.50.139 ansible_port=22 ansible_user=neo ansible_ssh_private_key_file=~/.ssh/id_rsa
+pi-zero2w-claw ansible_host=10.47.1.172 ansible_port=22 ansible_user=neo ansible_ssh_private_key_file=~/.ssh/id_rsa

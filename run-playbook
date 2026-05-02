@@ -27,6 +27,7 @@ BASE_TAGS="locale,base,zsh,git,fzf,dotfiles,mise,tmux,chrony,lazygit"
 DEV_TAGS="locale,base,zsh,git,fzf,dotfiles,mise,tmux,chrony,lazygit"
 FULL_TAGS="all"
 MINIMAL_TAGS="locale,base"
+SIMPLE_TAGS="locale,base,git,fzf,dotfiles,mise,tmux,chrony,unattended-upgrades,lazygit"
 
 # All available tags
 ALL_TAGS="base zsh git fzf rust mise dotfiles tmux unattended-upgrades docker chrony locale lazygit"
@@ -40,6 +41,7 @@ show_help() {
   echo "  dev     - Development (base)"
   echo "  full    - Full setup (dev + unattended-upgrades, docker)"
   echo "  minimal - Minimal packages only"
+  echo "  simple  - Essentials (base + git, fzf, dotfiles, mise, no zsh)"
   echo ""
   echo "Targets:"
   echo "  docker  - Docker test container (default)"
@@ -135,7 +137,7 @@ esac
 PRESET=""
 TAGS=""
 case "${1:-}" in
-base | dev | full | minimal)
+base | dev | full | minimal | simple)
   PRESET="$1"
   shift
   ;;
@@ -180,6 +182,7 @@ if [ -z "$TAGS" ] && [ -n "$PRESET" ]; then
   dev) TAGS="$DEV_TAGS" ;;
   full) TAGS="$FULL_TAGS" ;;
   minimal) TAGS="$MINIMAL_TAGS" ;;
+  simple) TAGS="$SIMPLE_TAGS" ;;
   esac
 fi
 
