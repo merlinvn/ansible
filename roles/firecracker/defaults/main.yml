@@ -1,0 +1,9 @@
+---
+firecracker_enabled: false
+firecracker_version: 1.9.1
+firecracker_arch_map:
+  x86_64: x86_64
+  aarch64: aarch64
+firecracker_install_dir: /usr/local/bin
+firecracker_download_dir: /var/cache/firecracker
+firecracker_checksum: ""

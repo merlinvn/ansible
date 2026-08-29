@@ -1,0 +1,87 @@
+---
+- name: Install Firecracker prerequisites
+  ansible.builtin.apt:
+    name:
+      - e2fsprogs
+      - nftables
+      - iproute2
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+  when: firecracker_enabled
+
+- name: Validate Firecracker architecture
+  ansible.builtin.assert:
+    that:
+      - ansible_facts.architecture in firecracker_arch_map
+    fail_msg: "Firecracker does not have a configured binary for {{ ansible_facts.architecture }}"
+  when: firecracker_enabled
+
+- name: Validate KVM capability
+  ansible.builtin.stat:
+    path: /dev/kvm
+  register: firecracker_kvm
+  when: firecracker_enabled
+
+- name: Require KVM for Firecracker
+  ansible.builtin.assert:
+    that:
+      - firecracker_kvm.stat.exists
+      - firecracker_kvm.stat.ischr
+    fail_msg: "Firecracker was requested, but /dev/kvm is unavailable on this host"
+  when: firecracker_enabled
+
+- name: Create Firecracker download directory
+  ansible.builtin.file:
+    path: "{{ firecracker_download_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  when: firecracker_enabled
+
+- name: Download Firecracker archive
+  ansible.builtin.get_url:
+    url: "https://github.com/firecracker-microvm/firecracker/releases/download/v{{ firecracker_version }}/firecracker-v{{ firecracker_version }}-{{ firecracker_arch_map[ansible_facts.architecture] }}.tgz"
+    dest: "{{ firecracker_download_dir }}/firecracker-v{{ firecracker_version }}-{{ firecracker_arch_map[ansible_facts.architecture] }}.tgz"
+    checksum: "{{ firecracker_checksum | default(omit, true) }}"
+    owner: root
+    group: root
+    mode: "0644"
+  when: firecracker_enabled
+
+- name: Install Firecracker binary
+  ansible.builtin.unarchive:
+    src: "{{ firecracker_download_dir }}/firecracker-v{{ firecracker_version }}-{{ firecracker_arch_map[ansible_facts.architecture] }}.tgz"
+    include:
+      - "release-v{{ firecracker_version }}-{{ firecracker_arch_map[ansible_facts.architecture] }}/firecracker-v{{ firecracker_version }}-{{ firecracker_arch_map[ansible_facts.architecture] }}"
+    dest: "{{ firecracker_download_dir }}"
+    remote_src: true
+    creates: "{{ firecracker_download_dir }}/release-v{{ firecracker_version }}-{{ firecracker_arch_map[ansible_facts.architecture] }}/firecracker-v{{ firecracker_version }}-{{ firecracker_arch_map[ansible_facts.architecture] }}"
+  when: firecracker_enabled
+
+- name: Create Firecracker state directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  loop:
+    - /srv/lab/firecracker
+    - /srv/lab/firecracker/bin
+    - /srv/lab/firecracker/kernels
+    - /srv/lab/firecracker/rootfs
+    - /srv/lab/firecracker/vms
+    - /srv/lab/firecracker/snapshots
+  when: firecracker_enabled
+
+- name: Install Firecracker binary
+  ansible.builtin.copy:
+    remote_src: true
+    src: "{{ firecracker_download_dir }}/release-v{{ firecracker_version }}-{{ firecracker_arch_map[ansible_facts.architecture] }}/firecracker-v{{ firecracker_version }}-{{ firecracker_arch_map[ansible_facts.architecture] }}"
+    dest: "{{ firecracker_install_dir }}/firecracker"
+    owner: root
+    group: root
+    mode: "0755"
+  when: firecracker_enabled

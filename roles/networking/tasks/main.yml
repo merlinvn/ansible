@@ -1,0 +1,38 @@
+---
+- name: Install networking packages
+  ansible.builtin.apt:
+    name:
+      - bridge-utils
+      - iproute2
+      - dnsmasq-base
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Configure IP forwarding when explicitly requested
+  ansible.posix.sysctl:
+    name: "{{ item }}"
+    value: "1"
+    state: present
+    reload: true
+  loop:
+    - net.ipv4.ip_forward
+    - net.ipv6.conf.all.forwarding
+  when: networking_forwarding
+
+- name: Ensure lab bridge exists
+  ansible.builtin.command: "ip link add name {{ lab_bridge_name }} type bridge"
+  register: lab_bridge_create
+  changed_when: lab_bridge_create.rc == 0
+  failed_when: lab_bridge_create.rc != 0 and 'File exists' not in lab_bridge_create.stderr
+  when: lab_bridge_configure
+
+- name: Configure lab bridge address
+  ansible.builtin.command: "ip address replace {{ lab_bridge_address }} dev {{ lab_bridge_name }}"
+  changed_when: false
+  when: lab_bridge_configure
+
+- name: Bring lab bridge up
+  ansible.builtin.command: "ip link set {{ lab_bridge_name }} up"
+  changed_when: false
+  when: lab_bridge_configure

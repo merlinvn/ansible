@@ -1,0 +1,16 @@
+#!/usr/sbin/nft -f
+flush ruleset
+
+table inet portable_lab {
+  chain forward {
+    type filter hook forward priority 0; policy drop;
+    iifname "{{ nftables_lab_bridge }}" accept
+    oifname "{{ nftables_lab_bridge }}" ct state established,related accept
+  }
+  chain input {
+    type filter hook input priority 0; policy accept;
+  }
+  chain output {
+    type filter hook output priority 0; policy accept;
+  }
+}

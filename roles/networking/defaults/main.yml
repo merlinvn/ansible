@@ -1,0 +1,5 @@
+---
+lab_bridge_name: br-lab
+lab_bridge_address: 10.88.0.1/24
+lab_bridge_configure: false
+networking_forwarding: false

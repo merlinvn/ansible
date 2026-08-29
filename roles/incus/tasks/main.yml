@@ -1,0 +1,31 @@
+---
+- name: Install Incus
+  ansible.builtin.apt:
+    name: "{{ incus_package }}"
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+  when: incus_enabled
+
+- name: Enable Incus service
+  ansible.builtin.systemd:
+    name: incus
+    enabled: true
+    state: started
+  when: incus_enabled
+
+- name: Check Incus storage pool
+  ansible.builtin.command: "incus storage show {{ incus_storage_pool }}"
+  register: incus_storage_list
+  changed_when: false
+  failed_when: false
+  when: incus_enabled
+
+- name: Create default Incus storage pool
+  ansible.builtin.command: >-
+    incus storage create {{ incus_storage_pool }} dir
+    source={{ incus_storage_source }}
+  register: incus_storage_create
+  changed_when: incus_storage_create.rc == 0
+  failed_when: incus_storage_create.rc != 0
+  when: incus_enabled and incus_storage_list.rc != 0

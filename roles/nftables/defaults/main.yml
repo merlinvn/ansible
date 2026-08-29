@@ -1,0 +1,4 @@
+---
+nftables_enabled: false
+nftables_lab_bridge: br-lab
+nftables_lab_cidr: 10.88.0.0/24

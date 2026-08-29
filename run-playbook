@@ -7,6 +7,7 @@
 #   dev     - base
 #   full    - dev + unattended-upgrades, docker
 #   minimal - only essential packages
+#   portable-lab - Prepare a Debian/Ubuntu host for Incus and Firecracker
 #
 # Targets:
 #   docker  - Use Docker test container (default)
@@ -28,9 +29,11 @@ DEV_TAGS="locale,base,zsh,git,fzf,dotfiles,mise,tmux,chrony,lazygit"
 FULL_TAGS="all"
 MINIMAL_TAGS="locale,base"
 SIMPLE_TAGS="locale,base,git,fzf,dotfiles,mise,tmux,chrony,unattended-upgrades,lazygit"
+PORTABLE_LAB_TAGS="all"
+PLAYBOOK="${ANSIBLE_PLAYBOOK:-setup.yml}"
 
 # All available tags
-ALL_TAGS="base zsh git fzf rust mise dotfiles tmux unattended-upgrades docker chrony locale lazygit"
+ALL_TAGS="base zsh git fzf rust mise dotfiles tmux unattended-upgrades docker chrony locale lazygit common networking nftables containerd incus firecracker monitoring"
 
 # Show help
 show_help() {
@@ -42,6 +45,7 @@ show_help() {
   echo "  full    - Full setup (dev + unattended-upgrades, docker)"
   echo "  minimal - Minimal packages only"
   echo "  simple  - Essentials (base + git, fzf, dotfiles, mise, no zsh)"
+  echo "  portable-lab - Prepare a Debian/Ubuntu host for Incus and Firecracker"
   echo ""
   echo "Targets:"
   echo "  docker  - Docker test container (default)"
@@ -50,6 +54,7 @@ show_help() {
   echo ""
   echo "Options:"
   echo "  --tags TAGS    - Run specific tags (comma-separated)"
+  echo "  --playbook FILE - Run a specific playbook (default: setup.yml)"
   echo "  --list        - List available tags"
   echo "  --help        - Show this help"
   echo ""
@@ -72,8 +77,15 @@ list_tags() {
 # Docker inventory
 get_docker_inventory() {
   cat >/tmp/docker_hosts_$$ <<'EOF'
+[all:children]
+new_machine
+portable_lab
+
 [new_machine]
 localhost ansible_port=2222 ansible_user=ubuntu ansible_password=ubuntu ansible_become_password=ubuntu ansible_python_interpreter=/usr/bin/python3
+
+[portable_lab]
+localhost
 EOF
   echo /tmp/docker_hosts_$$
 }
@@ -81,8 +93,15 @@ EOF
 # Local inventory
 get_local_inventory() {
   cat >/tmp/local_hosts_$$ <<'EOF'
+[all:children]
+new_machine
+portable_lab
+
 [new_machine]
 localhost ansible_connection=local ansible_become_password=sudo
+
+[portable_lab]
+localhost
 EOF
   echo /tmp/local_hosts_$$
 }
@@ -92,8 +111,15 @@ get_single_node_inventory() {
   NODE=$1
   BECOME_PASSWORD=$2
   cat >/tmp/single_node_$$ <<EOF
+[all:children]
+new_machine
+portable_lab
+
 [new_machine]
 ${NODE} ansible_become_password=${BECOME_PASSWORD}
+
+[portable_lab]
+${NODE}
 EOF
   echo /tmp/single_node_$$
 }
@@ -117,7 +143,7 @@ run_playbook() {
     ensure_docker
   fi
 
-  ansible-playbook -i "$INVENTORY" setup.yml --tags "$TAGS"
+  ansible-playbook -i "$INVENTORY" "$PLAYBOOK" --tags "$TAGS"
 }
 
 # Parse arguments
@@ -137,7 +163,7 @@ esac
 PRESET=""
 TAGS=""
 case "${1:-}" in
-base | dev | full | minimal | simple)
+base | dev | full | minimal | simple | portable-lab)
   PRESET="$1"
   shift
   ;;
@@ -147,6 +173,14 @@ base | dev | full | minimal | simple)
   ;;
 --tags | -t)
   TAGS="$2"
+  shift 2
+  ;;
+--playbook=*)
+  PLAYBOOK=$(echo "$1" | cut -d= -f2)
+  shift
+  ;;
+--playbook)
+  PLAYBOOK="$2"
   shift 2
   ;;
 esac
@@ -170,6 +204,11 @@ while [ $# -gt 0 ]; do
     TAGS="$2"
     shift
     ;;
+  --playbook=*) PLAYBOOK=$(echo "$1" | cut -d= -f2) ;;
+  --playbook)
+    PLAYBOOK="$2"
+    shift
+    ;;
   docker | local | remote) TARGET="$1" ;;
   esac
   shift
@@ -183,6 +222,10 @@ if [ -z "$TAGS" ] && [ -n "$PRESET" ]; then
   full) TAGS="$FULL_TAGS" ;;
   minimal) TAGS="$MINIMAL_TAGS" ;;
   simple) TAGS="$SIMPLE_TAGS" ;;
+  portable-lab)
+    TAGS="$PORTABLE_LAB_TAGS"
+    PLAYBOOK="playbooks/portable-lab.yml"
+    ;;
   esac
 fi
 

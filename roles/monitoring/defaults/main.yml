@@ -1,0 +1,4 @@
+---
+monitoring_enabled: false
+monitoring_packages:
+  - prometheus-node-exporter

@@ -1,0 +1,22 @@
+---
+- name: Prepare Firecracker dependencies on a lab host
+  hosts: portable_lab
+  become: true
+  gather_facts: true
+  pre_tasks:
+    - name: Require a Debian-family host
+      ansible.builtin.assert:
+        that:
+          - ansible_facts.os_family == 'Debian'
+        fail_msg: "firecracker supports Debian and Ubuntu hosts only"
+  roles:
+    - role: common
+      tags: [common]
+    - role: networking
+      tags: [networking]
+    - role: nftables
+      tags: [nftables]
+    - role: containerd
+      tags: [containerd]
+    - role: firecracker
+      tags: [firecracker]

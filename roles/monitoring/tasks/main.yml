@@ -1,0 +1,15 @@
+---
+- name: Install host monitoring packages
+  ansible.builtin.apt:
+    name: "{{ monitoring_packages }}"
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+  when: monitoring_enabled
+
+- name: Enable node exporter
+  ansible.builtin.systemd:
+    name: prometheus-node-exporter
+    enabled: true
+    state: started
+  when: monitoring_enabled

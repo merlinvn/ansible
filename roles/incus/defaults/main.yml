@@ -1,0 +1,5 @@
+---
+incus_enabled: false
+incus_package: incus
+incus_storage_pool: default
+incus_storage_source: /var/lib/incus/storage-pools/default

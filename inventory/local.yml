@@ -1,0 +1,9 @@
+all:
+  children:
+    portable_lab:
+      hosts:
+        localhost:
+          ansible_connection: local
+          ansible_user: "{{ lookup('env', 'USER') }}"
+          install:
+            - common

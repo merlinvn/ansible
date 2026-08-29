@@ -1,0 +1,52 @@
+---
+- name: Configure hosts from desired components
+  hosts: all
+  become: true
+  gather_facts: true
+  vars:
+    install_components: "{{ install | default([]) }}"
+    component_firecracker: "{{ 'firecracker' in install_components }}"
+    component_incus: "{{ 'incus' in install_components }}"
+    component_containerd: "{{ 'containerd' in install_components }}"
+    component_monitoring: "{{ 'node_exporter' in install_components }}"
+    component_networking: >-
+      {{ 'networking' in install_components or component_firecracker or component_incus }}
+    component_nftables: >-
+      {{ 'nftables' in install_components or component_firecracker }}
+  pre_tasks:
+    - name: Require a Debian-family host for the supported components
+      ansible.builtin.assert:
+        that:
+          - ansible_facts.os_family == 'Debian'
+        fail_msg: "The component-based host playbook currently supports Debian and Ubuntu hosts only"
+  roles:
+    - role: common
+      tags: [common, base]
+    - role: networking
+      when: component_networking
+      tags: [networking]
+    - role: nftables
+      vars:
+        nftables_enabled: "{{ component_nftables }}"
+      when: component_nftables
+      tags: [nftables]
+    - role: containerd
+      vars:
+        containerd_enabled: "{{ component_containerd }}"
+      when: component_containerd
+      tags: [containerd]
+    - role: incus
+      vars:
+        incus_enabled: "{{ component_incus }}"
+      when: component_incus
+      tags: [incus]
+    - role: firecracker
+      vars:
+        firecracker_enabled: "{{ component_firecracker }}"
+      when: component_firecracker
+      tags: [firecracker]
+    - role: monitoring
+      vars:
+        monitoring_enabled: "{{ component_monitoring }}"
+      when: component_monitoring
+      tags: [monitoring]
