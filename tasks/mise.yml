@@ -27,4 +27,5 @@
     line: 'eval "$(~/.local/bin/mise activate zsh)"'
     create: true
     insertafter: EOF
+  when: mise_configure_shell | default(true)
   tags: "{{ mise_tags }}"

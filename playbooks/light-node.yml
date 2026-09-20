@@ -1,0 +1,78 @@
+---
+- name: Configure a lightweight Debian or Ubuntu node
+  hosts: light_nodes
+  become: false
+  gather_facts: true
+  vars:
+    username: "{{ ansible_user | default(ansible_facts.user_id) }}"
+    bootstrap_tags: [bootstrap]
+    mise_tags: [mise]
+    dotfiles_tags: [dotfiles]
+    tmux_tags: [tmux]
+    chrony_tags: [chrony, ntp]
+    ssh_tags: [ssh]
+    locale_tags: [locale]
+    unattended_tags: [unattended-upgrades]
+  pre_tasks:
+    - name: Require a Debian-family host
+      ansible.builtin.assert:
+        that:
+          - ansible_facts.os_family == 'Debian'
+        fail_msg: "light-node supports Debian and Ubuntu hosts only"
+    - name: Update package cache
+      become: true
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+  tasks:
+    - name: Create administrative user and copy SSH authorized keys
+      ansible.builtin.include_tasks: ../tasks/user.yml
+      tags: [bootstrap, user, ssh]
+
+    - name: Setup locale
+      ansible.builtin.include_tasks: ../tasks/locale.yml
+      tags: "{{ locale_tags }}"
+
+    - name: Setup NTP time synchronization
+      ansible.builtin.include_tasks: ../tasks/chrony.yml
+      tags: "{{ chrony_tags }}"
+
+    - name: Install lightweight base packages
+      ansible.builtin.include_tasks: ../tasks/install_basic_packages.yml
+      tags: [base]
+
+    - name: Setup Mise
+      ansible.builtin.include_tasks: ../tasks/mise.yml
+      vars:
+        mise_configure_shell: false
+      tags: "{{ mise_tags }}"
+
+    - name: Install Starship binary
+      ansible.builtin.include_tasks: ../tasks/starship.yml
+      tags: [starship]
+
+    - name: Install and link selected dotfiles
+      ansible.builtin.include_tasks: ../tasks/dotfiles.yml
+      vars:
+        dotfiles_packages:
+          - tmux
+          - shell
+          - mise
+          - git
+          - starship
+      tags: "{{ dotfiles_tags }}"
+
+    - name: Set the login shell for the connection user
+      become: true
+      ansible.builtin.user:
+        name: "{{ username }}"
+        shell: /usr/bin/zsh
+      tags: [zsh]
+
+    - name: Setup tmux plugin manager
+      ansible.builtin.include_tasks: ../tasks/tmux.yml
+      tags: "{{ tmux_tags }}"
+
+    - name: Setup unattended security upgrades
+      ansible.builtin.include_tasks: ../tasks/unattended-upgrades.yml
+      tags: "{{ unattended_tags }}"

@@ -23,12 +23,11 @@
   tags: "{{ dotfiles_tags }}"
 
 - name: Use Stow to manage dotfiles
-  command: stow -t {{ ansible_facts.user_dir }} -d {{ ansible_facts.user_dir }}/.dotfiles --adopt {{ item }}
-  loop:
-    - shell
-    - vim
-    - tmux
-    - starship
+  command: >-
+    stow -t {{ ansible_facts.user_dir }}
+    -d {{ ansible_facts.user_dir }}/.dotfiles
+    --adopt {{ item }}
+  loop: "{{ dotfiles_packages | default(['shell', 'vim', 'tmux', 'starship']) }}"
   tags: "{{ dotfiles_tags }}"
 
 - name: Reset dotfiles repo

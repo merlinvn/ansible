@@ -1,10 +1,11 @@
 ---
-- name: Configure hosts from desired components
+- name: Configure a compute node from desired components
   hosts: all
   become: true
   gather_facts: true
   vars:
     install_components: "{{ install | default([]) }}"
+    compute_ssh_user: "{{ ansible_user | default(ansible_facts.user_id) }}"
     component_firecracker: "{{ 'firecracker' in install_components }}"
     component_incus: "{{ 'incus' in install_components }}"
     component_containerd: "{{ 'containerd' in install_components }}"
@@ -18,7 +19,19 @@
       ansible.builtin.assert:
         that:
           - ansible_facts.os_family == 'Debian'
-        fail_msg: "The component-based host playbook currently supports Debian and Ubuntu hosts only"
+        fail_msg: "The compute-node playbook currently supports Debian and Ubuntu hosts only"
+    - name: Install local SSH public key for the connection user
+      ansible.posix.authorized_key:
+        user: "{{ compute_ssh_user }}"
+        state: present
+        key: >-
+          {{ lookup(
+            'ansible.builtin.file',
+            ssh_public_key_file | default(
+              lookup('ansible.builtin.env', 'HOME') ~ '/.ssh/id_ed25519.pub'
+            )
+          ) }}
+      tags: [ssh]
   roles:
     - role: common
       tags: [common, base]

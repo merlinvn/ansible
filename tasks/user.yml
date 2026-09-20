@@ -1,4 +1,5 @@
 - name: Create neo user
+  become: true
   ansible.builtin.user:
     name: neo
     shell: /bin/bash
@@ -15,19 +16,22 @@
     mode: "0440"
   tags: "{{ bootstrap_tags }}"
 
-- name: Copy SSH authorized keys from root
+- name: Install local SSH public key for neo
   become: true
-  shell: |
-    if [ -f /root/.ssh/authorized_keys ]; then
-      mkdir -p /home/neo/.ssh
-      chmod 700 /home/neo/.ssh
-      cp /root/.ssh/authorized_keys /home/neo/.ssh/authorized_keys
-      chmod 600 /home/neo/.ssh/authorized_keys
-      chown -R neo:neo /home/neo/.ssh
-    fi
+  ansible.posix.authorized_key:
+    user: neo
+    state: present
+    key: >-
+      {{ lookup(
+        'ansible.builtin.file',
+        ssh_public_key_file | default(
+          lookup('ansible.builtin.env', 'HOME') ~ '/.ssh/id_ed25519.pub'
+        )
+      ) }}
   tags: "{{ bootstrap_tags }}"
 
 - name: Ensure sudo group exists
+  become: true
   ansible.builtin.group:
     name: sudo
     state: present

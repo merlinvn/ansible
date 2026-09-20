@@ -1,0 +1,14 @@
+- name: Download Starship installer
+  become: true
+  ansible.builtin.get_url:
+    url: https://starship.rs/install.sh
+    dest: /tmp/starship-install.sh
+    mode: "0755"
+  tags: [starship]
+
+- name: Install Starship binary
+  become: true
+  ansible.builtin.command: /tmp/starship-install.sh -y
+  args:
+    creates: /usr/local/bin/starship
+  tags: [starship]

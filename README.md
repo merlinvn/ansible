@@ -7,9 +7,12 @@ separate from the developer-machine playbook and is composed from roles for
 common packages, networking, nftables, Incus, Firecracker, containerd, and
 monitoring.
 
-The component-based entry point is `playbooks/site.yml`. Add a host and declare
+The component-based entry point for powerful compute hosts is
+`playbooks/compute-node.yml`. It is intended for machines such as the Radxa X4
+that can provide KVM, containerd, Incus, or Firecracker. Add a host and declare
 what it should run; implementation roles and Firecracker's nftables dependency
-are selected automatically:
+are selected automatically. It also installs the local controller's SSH public
+key for the Ansible connection user:
 
 ```yaml
 new-box:
@@ -20,9 +23,25 @@ new-box:
     - node_exporter
 ```
 
-Run it with `ansible-playbook -i inventory/local.yml playbooks/site.yml
+Run it with `ansible-playbook -i inventory/local.yml playbooks/compute-node.yml
 --limit localhost` (or point `-i` at your own inventory). Forwarding, lab
 bridges, and firewall rules remain opt-in.
+
+For lightweight nodes such as an Orange Pi Zero 3W, put hosts in the
+`light_nodes` group and run:
+
+```sh
+ansible-playbook -i inventory/light-nodes.yml playbooks/light-node.yml
+```
+
+The lightweight playbook installs the base developer packages, locale, NTP time
+synchronization, the local controller's `~/.ssh/id_ed25519.pub` as an
+authorized key for `neo`, Git, Zsh, Mise, tmux, and unattended security
+upgrades. Dotfile configuration is applied only through Stow for
+the `tmux`, `shell`, `mise`, `git`, and `starship` packages from
+`https://github.com/merlinvn/dotfiles`. Language runtimes are intentionally
+left to Mise. The SSH key behavior is shared by playbooks that use the common
+user setup task; override it with `-e ssh_public_key_file=...` when needed.
 
 ## Quick Start
 

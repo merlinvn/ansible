@@ -42,28 +42,47 @@
   when: not ohmyzsh_stat.stat.exists
   tags: "{{ zsh_tags }}"
 
-- name: Install zsh-autocomplete plugin
-  ansible.builtin.git:
-    repo: "https://github.com/marlonrichert/zsh-autocomplete.git"
-    dest: "{{ ansible_facts.user_dir }}/.oh-my-zsh/plugins/zsh-autocomplete"
+- name: Check managed Zsh plugin repositories
+  ansible.builtin.stat:
+    path: "{{ item.path }}/.git"
+  loop:
+    - name: zsh-autocomplete
+      path: "{{ ansible_facts.user_dir }}/.oh-my-zsh/plugins/zsh-autocomplete"
+    - name: zsh-syntax-highlighting
+      path: "{{ ansible_facts.user_dir }}/.oh-my-zsh/plugins/zsh-syntax-highlighting"
+    - name: zsh-autosuggestions
+      path: "{{ ansible_facts.user_dir }}/.oh-my-zsh/plugins/zsh-autosuggestions"
+    - name: fast-syntax-highlighting
+      path: "{{ ansible_facts.user_dir }}/.oh-my-zsh/plugins/fast-syntax-highlighting"
+  register: zsh_plugin_repositories
   tags: "{{ zsh_tags }}"
 
-- name: Install zsh-syntax-highlighting plugin
-  ansible.builtin.git:
-    repo: "https://github.com/zsh-users/zsh-syntax-highlighting.git"
-    dest: "{{ ansible_facts.user_dir }}/.oh-my-zsh/plugins/zsh-syntax-highlighting"
+- name: Remove incomplete managed Zsh plugin directories
+  ansible.builtin.file:
+    path: "{{ item.item.path }}"
+    state: absent
+  loop: "{{ zsh_plugin_repositories.results }}"
+  when: item.stat.exists is false
   tags: "{{ zsh_tags }}"
 
-- name: Install zsh-autosuggestions plugin
+- name: Install or update Zsh plugins
   ansible.builtin.git:
-    repo: "https://github.com/zsh-users/zsh-autosuggestions.git"
-    dest: "{{ ansible_facts.user_dir }}/.oh-my-zsh/plugins/zsh-autosuggestions"
-  tags: "{{ zsh_tags }}"
-
-- name: Install fast-syntax-highlighting plugin
-  ansible.builtin.git:
-    repo: "https://github.com/zdharma-continuum/fast-syntax-highlighting.git"
-    dest: "{{ ansible_facts.user_dir }}/.oh-my-zsh/plugins/fast-syntax-highlighting"
+    repo: "{{ item.repo }}"
+    dest: "{{ item.dest }}"
+    update: true
+  loop:
+    - name: zsh-autocomplete
+      repo: "https://github.com/marlonrichert/zsh-autocomplete.git"
+      dest: "{{ ansible_facts.user_dir }}/.oh-my-zsh/plugins/zsh-autocomplete"
+    - name: zsh-syntax-highlighting
+      repo: "https://github.com/zsh-users/zsh-syntax-highlighting.git"
+      dest: "{{ ansible_facts.user_dir }}/.oh-my-zsh/plugins/zsh-syntax-highlighting"
+    - name: zsh-autosuggestions
+      repo: "https://github.com/zsh-users/zsh-autosuggestions.git"
+      dest: "{{ ansible_facts.user_dir }}/.oh-my-zsh/plugins/zsh-autosuggestions"
+    - name: fast-syntax-highlighting
+      repo: "https://github.com/zdharma-continuum/fast-syntax-highlighting.git"
+      dest: "{{ ansible_facts.user_dir }}/.oh-my-zsh/plugins/fast-syntax-highlighting"
   tags: "{{ zsh_tags }}"
 
 - name: Update plugins in .zshrc
