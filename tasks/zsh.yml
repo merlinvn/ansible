@@ -20,26 +20,11 @@
     shell: "{{ zsh_path.stdout }}"
   tags: "{{ zsh_tags }}"
 
-- name: Check if oh-my-zsh exists
-  stat:
-    path: "{{ ansible_facts.user_dir }}/.oh-my-zsh"
-  register: ohmyzsh_stat
-  tags: "{{ zsh_tags }}"
-
-- name: Install oh-my-zsh
-  shell: |
-    set -e
-    sh -c "$(curl -L https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
-  when: not ohmyzsh_stat.stat.exists
-  tags: "{{ zsh_tags }}"
-
-- name: Clone oh-my-zsh repository
+- name: Install or update oh-my-zsh
   ansible.builtin.git:
     repo: "https://github.com/ohmyzsh/ohmyzsh.git"
     dest: "{{ ansible_facts.user_dir }}/.oh-my-zsh"
-    clone: true
     update: true
-  when: not ohmyzsh_stat.stat.exists
   tags: "{{ zsh_tags }}"
 
 - name: Check managed Zsh plugin repositories
@@ -50,10 +35,6 @@
       path: "{{ ansible_facts.user_dir }}/.oh-my-zsh/plugins/zsh-autocomplete"
     - name: zsh-syntax-highlighting
       path: "{{ ansible_facts.user_dir }}/.oh-my-zsh/plugins/zsh-syntax-highlighting"
-    - name: zsh-autosuggestions
-      path: "{{ ansible_facts.user_dir }}/.oh-my-zsh/plugins/zsh-autosuggestions"
-    - name: fast-syntax-highlighting
-      path: "{{ ansible_facts.user_dir }}/.oh-my-zsh/plugins/fast-syntax-highlighting"
   register: zsh_plugin_repositories
   tags: "{{ zsh_tags }}"
 
@@ -77,20 +58,94 @@
     - name: zsh-syntax-highlighting
       repo: "https://github.com/zsh-users/zsh-syntax-highlighting.git"
       dest: "{{ ansible_facts.user_dir }}/.oh-my-zsh/plugins/zsh-syntax-highlighting"
-    - name: zsh-autosuggestions
-      repo: "https://github.com/zsh-users/zsh-autosuggestions.git"
-      dest: "{{ ansible_facts.user_dir }}/.oh-my-zsh/plugins/zsh-autosuggestions"
-    - name: fast-syntax-highlighting
-      repo: "https://github.com/zdharma-continuum/fast-syntax-highlighting.git"
-      dest: "{{ ansible_facts.user_dir }}/.oh-my-zsh/plugins/fast-syntax-highlighting"
   tags: "{{ zsh_tags }}"
 
-- name: Update plugins in .zshrc
-  lineinfile:
-    path: "{{ ansible_facts.user_dir }}/.zshrc"
-    regexp: '^plugins=\(.*\)$'
-    line: "plugins=(git zsh-autosuggestions zsh-syntax-highlighting fast-syntax-highlighting docker docker-compose kubectl)"
-    backrefs: true
+- name: Install or update the deja Oh My Zsh plugin
+  ansible.builtin.git:
+    repo: "https://github.com/Giammarco-Ferranti/deja.git"
+    dest: "{{ ansible_facts.user_dir }}/.oh-my-zsh/custom/plugins/deja"
+    update: true
+  tags: "{{ zsh_tags }}"
+
+- name: Set default deja version
+  ansible.builtin.set_fact:
+    deja_version: "0.4.0"
+  when: deja_version is not defined
+  tags: "{{ zsh_tags }}"
+
+- name: Set deja release architecture
+  ansible.builtin.set_fact:
+    deja_arch: "{{ {'x86_64': 'amd64', 'aarch64': 'arm64'}.get(ansible_facts.architecture, '') }}"
+  tags: "{{ zsh_tags }}"
+
+- name: Validate deja release architecture
+  ansible.builtin.assert:
+    that:
+      - deja_arch in ['amd64', 'arm64']
+    fail_msg: "deja does not publish Linux binaries for {{ ansible_facts.architecture }}"
+  tags: "{{ zsh_tags }}"
+
+- name: Create local bin directory for deja
+  ansible.builtin.file:
+    path: "{{ ansible_facts.user_dir }}/.local/bin"
+    state: directory
+    mode: '0755'
+  tags: "{{ zsh_tags }}"
+
+- name: Download deja release archive
+  ansible.builtin.get_url:
+    url: "https://github.com/Giammarco-Ferranti/deja/releases/download/v{{ deja_version }}/deja_{{ deja_version }}_linux_{{ deja_arch }}.tar.gz"
+    dest: "/tmp/deja_{{ deja_version }}_linux_{{ deja_arch }}.tar.gz"
+    mode: '0644'
+  tags: "{{ zsh_tags }}"
+
+- name: Download deja release checksums
+  ansible.builtin.get_url:
+    url: "https://github.com/Giammarco-Ferranti/deja/releases/download/v{{ deja_version }}/checksums.txt"
+    dest: "/tmp/deja_{{ deja_version }}_checksums.txt"
+    mode: '0644'
+  tags: "{{ zsh_tags }}"
+
+- name: Verify deja release archive checksum
+  ansible.builtin.shell: >-
+    grep ' deja_{{ deja_version }}_linux_{{ deja_arch }}.tar.gz$'
+    /tmp/deja_{{ deja_version }}_checksums.txt |
+    sha256sum -c -
+  args:
+    chdir: /tmp
+  register: deja_checksum
+  changed_when: false
+  tags: "{{ zsh_tags }}"
+
+- name: Create temporary deja extraction directory
+  ansible.builtin.file:
+    path: "/tmp/deja-{{ deja_version }}-{{ deja_arch }}"
+    state: directory
+    mode: '0755'
+  tags: "{{ zsh_tags }}"
+
+- name: Extract deja binary
+  ansible.builtin.unarchive:
+    src: "/tmp/deja_{{ deja_version }}_linux_{{ deja_arch }}.tar.gz"
+    dest: "/tmp/deja-{{ deja_version }}-{{ deja_arch }}"
+    remote_src: true
+    creates: "/tmp/deja-{{ deja_version }}-{{ deja_arch }}/deja"
+  tags: "{{ zsh_tags }}"
+
+- name: Install deja binary
+  ansible.builtin.copy:
+    src: "/tmp/deja-{{ deja_version }}-{{ deja_arch }}/deja"
+    dest: "{{ ansible_facts.user_dir }}/.local/bin/deja"
+    remote_src: true
+    mode: '0755'
+  tags: "{{ zsh_tags }}"
+
+- name: Import existing Zsh history into deja
+  ansible.builtin.command:
+    argv:
+      - "{{ ansible_facts.user_dir }}/.local/bin/deja"
+      - import
+  changed_when: false
   tags: "{{ zsh_tags }}"
 
 - name: Install starship prompt
@@ -106,12 +161,4 @@
   shell: /tmp/starship-install.sh -y
   args:
     creates: /usr/local/bin/starship
-  tags: "{{ zsh_tags }}"
-
-- name: Add starship init to .zshrc
-  lineinfile:
-    path: "{{ ansible_facts.user_dir }}/.zshrc"
-    line: 'eval "$(starship init zsh)"'
-    create: true
-    insertafter: EOF
   tags: "{{ zsh_tags }}"
