@@ -6,6 +6,7 @@
   vars:
     username: "{{ ansible_user | default(ansible_facts.user_id) }}"
     bootstrap_tags: [bootstrap]
+    zsh_tags: [zsh]
     mise_tags: [mise]
     dotfiles_tags: [dotfiles]
     tmux_tags: [tmux]
@@ -41,6 +42,10 @@
       ansible.builtin.include_tasks: ../tasks/install_basic_packages.yml
       tags: [base]
 
+    - name: Setup Zsh and Oh My Zsh
+      ansible.builtin.include_tasks: ../tasks/zsh.yml
+      tags: "{{ zsh_tags }}"
+
     - name: Setup Mise
       ansible.builtin.include_tasks: ../tasks/mise.yml
       vars:
@@ -61,13 +66,6 @@
           - git
           - starship
       tags: "{{ dotfiles_tags }}"
-
-    - name: Set the login shell for the connection user
-      become: true
-      ansible.builtin.user:
-        name: "{{ username }}"
-        shell: /usr/bin/zsh
-      tags: [zsh]
 
     - name: Setup tmux plugin manager
       ansible.builtin.include_tasks: ../tasks/tmux.yml
