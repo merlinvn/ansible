@@ -4,17 +4,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
-- Syntax check: `ansible-playbook setup.yml --syntax-check`
+- Syntax check: `ansible-playbook playbooks/setup.yml --syntax-check`
 - Lint: `ansible-lint .`
-- Run playbook (remote): `ansible-playbook -i hosts setup.yml -K --tags all`
+- Run playbook (remote): `ansible-playbook -i hosts playbooks/setup.yml -K --tags all`
 - Run playbook (docker): `./run-playbook [--tags base,zsh,git,...]`
 - Docker: `./docker-build` → `./docker-run` → `./docker-reset`
 - SSH docker: `ssh -p 2222 ubuntu@localhost` (password: `ubuntu`)
 
 ## Architecture
 
-- Main playbook `setup.yml` orchestrates task includes from `tasks/` directory
+- Main playbook `playbooks/setup.yml` orchestrates task includes from `tasks/` directory
 - Task files: `install_basic_packages.yml`, `zsh.yml`, `git.yml`, `fzf.yml`, `rust.yml`, `mise.yml`, `node.yml`, `dotfiles.yml`, `unattended-upgrades.yml`, `docker.yml`
 - Tag-based execution: `--tags base,install,zsh,git,fzf,rust,mise,node,dotfiles,unattended-upgrades`
 - All tasks use `become: true` for sudo
-- Inventory `hosts` defines `[new_machine]` group for remote targets
+- `playbooks/setup.yml` targets all hosts in the selected inventory; use `--limit` to select one host

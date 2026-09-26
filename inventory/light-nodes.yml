@@ -3,6 +3,9 @@ all:
     light_nodes:
       hosts:
         # Replace the address with the node's actual hostname or IP.
-        orange-pi-zero-3w:
-          ansible_host: 10.47.1.201
+        # orange-pi-zero-3w:
+        #   ansible_host: 10.47.1.201
+        #   ansible_user: neo
+        orange-pi-3b:
+          ansible_host: 10.10.50.102
           ansible_user: neo

@@ -14,6 +14,7 @@
     ssh_tags: [ssh]
     locale_tags: [locale]
     unattended_tags: [unattended-upgrades]
+    lazygit_tags: [lazygit]
   pre_tasks:
     - name: Require a Debian-family host
       ansible.builtin.assert:
@@ -51,6 +52,10 @@
       vars:
         mise_configure_shell: false
       tags: "{{ mise_tags }}"
+
+    - name: Setup lazygit
+      ansible.builtin.include_tasks: ../tasks/lazygit.yml
+      tags: "{{ lazygit_tags }}"
 
     - name: Install Starship binary
       ansible.builtin.include_tasks: ../tasks/starship.yml

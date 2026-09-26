@@ -1,4 +1,4 @@
-- hosts: new_machine
+- hosts: all
   vars:
     username: "{{ ansible_facts['user_id'] }}"
     zsh_tags:
@@ -41,62 +41,62 @@
         update_cache: true
   tasks:
     - name: Create neo user
-      include_tasks: ./tasks/user.yml
+      include_tasks: ../tasks/user.yml
       tags: "{{ bootstrap_tags }}"
     - name: Setup locale
-      include_tasks: ./tasks/locale.yml
+      include_tasks: ../tasks/locale.yml
       tags: "{{ locale_tags }}"
     - name: Setup chrony
-      include_tasks: ./tasks/chrony.yml
+      include_tasks: ../tasks/chrony.yml
       tags: "{{ chrony_tags }}"
     - name: Install basic packages
-      include_tasks: ./tasks/install_basic_packages.yml
+      include_tasks: ../tasks/install_basic_packages.yml
       tags:
         - base
     - name: Install Docker
       include_tasks:
-        file: ./tasks/docker.yml
+        file: ../tasks/docker.yml
       tags: "{{ docker_tags }}"
     - name: Setup zsh
       include_tasks:
-        file: ./tasks/zsh.yml
+        file: ../tasks/zsh.yml
       tags: "{{ zsh_tags }}"
     - name: Setup git
       include_tasks:
-        file: ./tasks/git.yml
+        file: ../tasks/git.yml
       tags: "{{ git_tags }}"
     - name: Setup fzf
       include_tasks:
-        file: ./tasks/fzf.yml
+        file: ../tasks/fzf.yml
       tags: "{{ fzf_tags }}"
     - name: Setup rust
       include_tasks:
-        file: ./tasks/rust.yml
+        file: ../tasks/rust.yml
       tags: "{{ rust_tags }}"
     - name: Setup mise
       include_tasks:
-        file: ./tasks/mise.yml
+        file: ../tasks/mise.yml
       tags: "{{ mise_tags }}"
     - name: Setup pyenv
-      include_tasks: ./tasks/pyenv.yml
+      include_tasks: ../tasks/pyenv.yml
       tags: "{{ pyenv_tags }}"
     - name: Setup nvm
-      include_tasks: ./tasks/nvm.yml
+      include_tasks: ../tasks/nvm.yml
       tags: "{{ nvm_tags }}"
     - name: Setup lazygit
-      include_tasks: ./tasks/lazygit.yml
+      include_tasks: ../tasks/lazygit.yml
       tags: "{{ lazygit_tags }}"
     - name: Setup dotfiles
       include_tasks:
-        file: ./tasks/dotfiles.yml
+        file: ../tasks/dotfiles.yml
       tags: "{{ dotfiles_tags }}"
     - name: Setup tmux
       include_tasks:
-        file: ./tasks/tmux.yml
+        file: ../tasks/tmux.yml
       tags: "{{ tmux_tags }}"
     - name: Setup unattended-upgrades
       include_tasks:
-        file: ./tasks/unattended-upgrades.yml
+        file: ../tasks/unattended-upgrades.yml
       tags: "{{ unattended_tags }}"
   handlers:
     - name: Restart chrony

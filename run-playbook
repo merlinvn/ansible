@@ -30,7 +30,7 @@ FULL_TAGS="all"
 MINIMAL_TAGS="locale,base"
 SIMPLE_TAGS="locale,base,git,fzf,dotfiles,mise,tmux,chrony,unattended-upgrades,lazygit"
 PORTABLE_LAB_TAGS="all"
-PLAYBOOK="${ANSIBLE_PLAYBOOK:-setup.yml}"
+PLAYBOOK="${ANSIBLE_PLAYBOOK:-playbooks/setup.yml}"
 
 # All available tags
 ALL_TAGS="base zsh git fzf rust mise dotfiles tmux unattended-upgrades docker chrony locale lazygit common networking nftables containerd incus firecracker monitoring"
@@ -54,7 +54,7 @@ show_help() {
   echo ""
   echo "Options:"
   echo "  --tags TAGS    - Run specific tags (comma-separated)"
-  echo "  --playbook FILE - Run a specific playbook (default: setup.yml)"
+  echo "  --playbook FILE - Run a specific playbook (default: playbooks/setup.yml)"
   echo "  --list        - List available tags"
   echo "  --help        - Show this help"
   echo ""

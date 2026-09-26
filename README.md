@@ -47,7 +47,7 @@ user setup task; override it with `-e ssh_public_key_file=...` when needed.
 
 ### Remote machine
 ```sh
-ansible-playbook -i hosts setup.yml -K --tags all
+ansible-playbook -i hosts playbooks/setup.yml -K --tags all
 ```
 
 ### Portable lab host
@@ -84,7 +84,7 @@ BOOTSTRAP_REPO_URL=https://github.com/you/homelab.git ./bootstrap portable-lab l
 ansible-galaxy collection install -r requirements.yml
 
 # Syntax check
-ansible-playbook setup.yml --syntax-check
+ansible-playbook playbooks/setup.yml --syntax-check
 
 # Lint
 ansible-lint .
